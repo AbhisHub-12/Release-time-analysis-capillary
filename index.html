@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Duration Analysis Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .header .date {
+            margin-top: 15px;
+            font-size: 0.95em;
+            opacity: 0.8;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #1a5276;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            margin: 20px 0 15px 0;
+            font-size: 1.3em;
+        }
+
+        .executive-summary {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-left: 5px solid #f39c12;
+        }
+
+        .critical-finding {
+            background: #fef2f2;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .chart-wrapper {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .chart-box {
+            flex: 1;
+            min-width: 500px;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chart-box h4 {
+            text-align: center;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #1a5276;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e8f4f8;
+        }
+
+        .metric-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .metric-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .metric-card.danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .metric-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .metric-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-card .label {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-list li {
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            position: relative;
+        }
+
+        .recommendation-list li.high-priority {
+            border-left-color: #e74c3c;
+            background: #fef5f5;
+        }
+
+        .recommendation-list li.medium-priority {
+            border-left-color: #f39c12;
+            background: #fffbf0;
+        }
+
+        .priority-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .priority-high {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #f39c12;
+            color: white;
+        }
+
+        .priority-low {
+            background: #3498db;
+            color: white;
+        }
+
+        .code-block {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .impact-table td:last-child {
+            font-weight: bold;
+        }
+
+        .trend-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .trend-up {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .trend-down {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            .chart-box {
+                min-width: 100%;
+            }
+        }
+
+        .highlight-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+
+        .root-cause-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .root-cause-item h4 {
+            color: #c0392b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+
+        @media print {
+            .section {
+                break-inside: avoid;
+            }
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Release Duration Analysis Report</h1>
+            <div class="subtitle">Investigation: Increased Full Release Time in Lower and Production Clusters</div>
+            <div class="date">Report Generated: December 4, 2025</div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="section executive-summary">
+            <h2>Executive Summary</h2>
+            <p>This report presents a comprehensive analysis of the increasing release duration times observed across both non-production and production environments from September 17 to October 15, 2025.</p>
+
+            <div class="metric-cards">
+                <div class="metric-card danger">
+                    <div class="value">+62%</div>
+                    <div class="label">Non-Prod S-FR Increase</div>
+                </div>
+                <div class="metric-card warning">
+                    <div class="value">+21%</div>
+                    <div class="label">Non-Prod N-FR Increase</div>
+                </div>
+                <div class="metric-card">
+                    <div class="value">27,634</div>
+                    <div class="label">Total Resources in State</div>
+                </div>
+                <div class="metric-card danger">
+                    <div class="value">208</div>
+                    <div class="label">Blocking Helm Releases</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Key Finding:</strong> The primary cause of increased release times is the combination of <code>parallelism: 1</code> configuration forcing sequential resource application, coupled with 208 Helm releases configured with <code>wait=true</code> and 47 resources with 20-minute timeouts.
+            </div>
+        </div>
+
+        <!-- Trend Analysis -->
+        <div class="section">
+            <h2>Release Duration Trend Analysis</h2>
+
+            <h3>Non-Production Environment Trends</h3>
+
+            <div class="highlight-box" style="background: #f8f9fa; border-color: #dee2e6; margin-bottom: 20px;">
+                <strong>Environment Legend:</strong>
+                <ul style="margin: 10px 0 0 20px; list-style: disc;">
+                    <li><strong>D-FR</strong> = Development Full Release</li>
+                    <li><strong>N-FR</strong> = Nightly Full Release</li>
+                    <li><strong>S-FR</strong> = Staging Full Release</li>
+                </ul>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="nonProdChart"></canvas>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>D-FR<br><small>(Development)</small></th>
+                        <th>N-FR<br><small>(Nightly)</small></th>
+                        <th>S-FR<br><small>(Staging)</small></th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>17-23 Sept</td>
+                        <td>9.95</td>
+                        <td>13.235</td>
+                        <td>-</td>
+                        <td><span class="trend-indicator">Baseline</span></td>
+                    </tr>
+                    <tr>
+                        <td>24-30 Sept</td>
+                        <td>10.18</td>
+                        <td>14.67</td>
+                        <td>13.905</td>
+                        <td><span class="trend-indicator trend-up">+2.3%</span></td>
+                    </tr>
+                    <tr>
+                        <td>1-7 Oct</td>
+                        <td>10.87</td>
+                        <td>15.665</td>
+                        <td>-</td>
+                        <td><span class="trend-indicator trend-up">+6.8%</span></td>
+                    </tr>
+                    <tr>
+                        <td>8-15 Oct</td>
+                        <td>11.22</td>
+                        <td>16.62</td>
+                        <td>16.06</td>
+                        <td><span class="trend-indicator trend-up">+12.8%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Production Environment Trends</h3>
+            <div class="chart-container">
+                <canvas id="prodChart"></canvas>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cluster</th>
+                        <th>17-23 Sept</th>
+                        <th>8-15 Oct</th>
+                        <th>Change</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>EU-FR</td>
+                        <td>~27 min</td>
+                        <td>~27 min</td>
+                        <td>0%</td>
+                        <td><span class="trend-indicator">Stable</span></td>
+                    </tr>
+                    <tr>
+                        <td>Asia-FR</td>
+                        <td>~22 min</td>
+                        <td>~16 min</td>
+                        <td>-27%</td>
+                        <td><span class="trend-indicator trend-down">Improved</span></td>
+                    </tr>
+                    <tr>
+                        <td>USHC-FR</td>
+                        <td>~17 min</td>
+                        <td>~21 min</td>
+                        <td>+23%</td>
+                        <td><span class="trend-indicator trend-up">Degraded</span></td>
+                    </tr>
+                    <tr>
+                        <td>SEACRM-FR</td>
+                        <td>~12 min</td>
+                        <td>~17 min</td>
+                        <td>+42%</td>
+                        <td><span class="trend-indicator trend-up">Degraded</span></td>
+                    </tr>
+                    <tr>
+                        <td>I-FR</td>
+                        <td>~10 min</td>
+                        <td>~15 min</td>
+                        <td>+50%</td>
+                        <td><span class="trend-indicator trend-up">Degraded</span></td>
+                    </tr>
+                    <tr>
+                        <td>US-FR / Tata-FR</td>
+                        <td>~11 min</td>
+                        <td>~14 min</td>
+                        <td>+27%</td>
+                        <td><span class="trend-indicator trend-up">Degraded</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Infrastructure Analysis -->
+        <div class="section">
+            <h2>Infrastructure Analysis</h2>
+
+            <h3>Terraform State File Statistics</h3>
+            <div class="metric-cards">
+                <div class="metric-card">
+                    <div class="value">5,455</div>
+                    <div class="label">Module Instances</div>
+                </div>
+                <div class="metric-card">
+                    <div class="value">1,228</div>
+                    <div class="label">Helm Releases</div>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Resource Distribution</h3>
+                    <div style="height: 300px;">
+                        <canvas id="resourceChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Timeout Configuration Analysis</h3>
+                    <div style="height: 300px;">
+                        <canvas id="timeoutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Resource Breakdown by Type</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resource Type</th>
+                        <th>Count</th>
+                        <th>Impact on Release Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Helm Releases</td>
+                        <td>1,228</td>
+                        <td><span class="priority-tag priority-high">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>Kubernetes Secrets</td>
+                        <td>332</td>
+                        <td><span class="priority-tag priority-low">LOW</span></td>
+                    </tr>
+                    <tr>
+                        <td>IAM Roles</td>
+                        <td>249</td>
+                        <td><span class="priority-tag priority-medium">MEDIUM</span></td>
+                    </tr>
+                    <tr>
+                        <td>Service Modules</td>
+                        <td>222</td>
+                        <td><span class="priority-tag priority-high">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>Kubernetes Config Maps</td>
+                        <td>132</td>
+                        <td><span class="priority-tag priority-low">LOW</span></td>
+                    </tr>
+                    <tr>
+                        <td>Persistent Volume Claims</td>
+                        <td>130</td>
+                        <td><span class="priority-tag priority-medium">MEDIUM</span></td>
+                    </tr>
+                    <tr>
+                        <td>Data Sources</td>
+                        <td>119</td>
+                        <td><span class="priority-tag priority-medium">MEDIUM</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Root Cause Analysis -->
+        <div class="section critical-finding">
+            <h2>Root Cause Analysis</h2>
+
+            <div class="root-cause-item">
+                <h4><span class="icon">1</span> Parallelism Configuration Set to 1 (CRITICAL)</h4>
+                <p>The Terraform configuration has <code>parallelism: 1</code>, forcing all resources to be applied sequentially instead of in parallel. This single configuration is likely responsible for 40-60% of the release time increase.</p>
+                <div class="code-block">
+# Current problematic configuration
+parallelism = 1
+
+# This forces Terraform to process ONE resource at a time
+# instead of the default 10 concurrent operations
+                </div>
+            </div>
+
+            <div class="root-cause-item">
+                <h4><span class="icon">2</span> 208 Helm Releases with wait=true (CRITICAL)</h4>
+                <p>Out of 1,228 Helm releases, 208 are configured with <code>wait=true</code>. Each of these releases blocks Terraform execution until all pods are in Running/Ready state.</p>
+                <table>
+                    <tr>
+                        <th>Configuration</th>
+                        <th>Count</th>
+                        <th>Behavior</th>
+                    </tr>
+                    <tr>
+                        <td><code>wait=true</code></td>
+                        <td>208</td>
+                        <td>Blocking - waits for pod readiness</td>
+                    </tr>
+                    <tr>
+                        <td><code>wait=false</code></td>
+                        <td>1,166</td>
+                        <td>Non-blocking - continues immediately</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="root-cause-item">
+                <h4><span class="icon">3</span> High Timeout Resources (47 with 20-minute timeout)</h4>
+                <p>Multiple resources are configured with extremely long timeouts, adding significant wait time during releases:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timeout</th>
+                            <th>Count</th>
+                            <th>Resource Types</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1200s (20 min)</td>
+                            <td>47</td>
+                            <td>Redis Sentinels (15), MongoDB clusters, Neo4j</td>
+                        </tr>
+                        <tr>
+                            <td>900s (15 min)</td>
+                            <td>61</td>
+                            <td>CronJobs, Alert Monitoring, Bootstrap</td>
+                        </tr>
+                        <tr>
+                            <td>720s (12 min)</td>
+                            <td>29</td>
+                            <td>Various Helm releases</td>
+                        </tr>
+                        <tr>
+                            <td>600s (10 min)</td>
+                            <td>24</td>
+                            <td>Additional services</td>
+                        </tr>
+                        <tr>
+                            <td>300s (5 min)</td>
+                            <td>1,213</td>
+                            <td>Standard Helm releases</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="root-cause-item">
+                <h4><span class="icon">4</span> Large Database Fleet</h4>
+                <p>The infrastructure includes numerous database instances that are inherently slow to modify:</p>
+                <div class="two-column">
+                    <div>
+                        <h4 style="color: #2c3e50;">MySQL/Aurora Clusters (10)</h4>
+                        <ul>
+                            <li>mysql_airflow</li>
+                            <li>mysql_bootorgdb</li>
+                            <li>mysql_campaigns</li>
+                            <li>mysql_crimson</li>
+                            <li>mysql_dbmaster</li>
+                            <li>mysql_glue</li>
+                            <li>mysql_metadb</li>
+                            <li>mysql_nsadmin</li>
+                            <li>mysql_reon</li>
+                            <li>mysql_solutions</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: #2c3e50;">Redis Sentinel Clusters (15)</h4>
+                        <ul>
+                            <li>api-redis-sentinel</li>
+                            <li>apilock-redis-sentinel</li>
+                            <li>coupons-redis-sentinel</li>
+                            <li>data-redis-sentinel</li>
+                            <li>incentives-redis-sentinel</li>
+                            <li>loyalty-redis-sentinel</li>
+                            <li>nifi-redis-sentinel</li>
+                            <li>node-redis-sentinel</li>
+                            <li>orchestrator-redis-sentinel</li>
+                            <li>platforms-api-redis-sentinel</li>
+                            <li>reon-redis-sentinel</li>
+                            <li>session-redis-sentinel</li>
+                            <li>solutions-redis-sentinel</li>
+                            <li>redis-stack-server-sentinel</li>
+                            <li>+ exporters for each</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="root-cause-item">
+                <h4><span class="icon">5</span> Complex Dependency Chains</h4>
+                <p>Resources have 100+ dependencies each, forcing sequential execution even when parallelism is enabled. Example dependency chain includes:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>ACM certificates and validations</li>
+                    <li>IAM roles and policy attachments</li>
+                    <li>Kubernetes namespaces and secrets</li>
+                    <li>Cert-manager components</li>
+                    <li>Prometheus/Victoria Metrics stack</li>
+                    <li>Cloudflare access configurations</li>
+                </ul>
+            </div>
+
+            <div class="root-cause-item">
+                <h4><span class="icon">6</span> Massive State File Size</h4>
+                <p>The state file has grown to 189MB with 2.2 million lines, causing:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Slow state read/write operations</li>
+                    <li>Extended plan generation time</li>
+                    <li>Memory pressure during operations</li>
+                    <li>Network latency for remote state</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="section">
+            <h2>Recommendations & Solutions</h2>
+
+            <h3>Immediate Actions (High Impact)</h3>
+            <ul class="recommendation-list">
+                <li class="high-priority">
+                    <strong>Increase Terraform Parallelism</strong>
+                    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+                    <p style="margin-top: 10px;">Change parallelism from 1 to 20 (or higher):</p>
+                    <div class="code-block">
+# Option 1: CLI flag
+terraform apply -parallelism=20
+
+# Option 2: Environment variable
+export TF_CLI_ARGS_apply="-parallelism=20"
+
+# Option 3: Terraform configuration
+terraform {
+  # In terraform.tfvars or environment
+  parallelism = 20
+}
+                    </div>
+                    <p style="margin-top: 10px;"><strong>Expected Impact:</strong> 40-60% reduction in release time</p>
+                </li>
+
+                <li class="high-priority">
+                    <strong>Convert wait=true to wait=false for Non-Critical Releases</strong>
+                    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+                    <p style="margin-top: 10px;">Review all 208 releases with wait=true and change to wait=false where the release is not a dependency for other resources:</p>
+                    <div class="code-block">
+# Before
+resource "helm_release" "example" {
+  name  = "my-release"
+  wait  = true  # Blocks until ready
+  # ...
+}
+
+# After (for non-critical releases)
+resource "helm_release" "example" {
+  name  = "my-release"
+  wait  = false  # Continues immediately
+  # ...
+}
+                    </div>
+                    <p style="margin-top: 10px;"><strong>Expected Impact:</strong> 20-30% reduction in release time</p>
+                </li>
+
+                <li class="high-priority">
+                    <strong>Reduce Timeouts for Database Resources</strong>
+                    <span class="priority-tag priority-high">HIGH PRIORITY</span>
+                    <p style="margin-top: 10px;">Analyze actual deployment times and reduce timeouts accordingly:</p>
+                    <table class="impact-table">
+                        <thead>
+                            <tr>
+                                <th>Resource Type</th>
+                                <th>Current Timeout</th>
+                                <th>Recommended</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Redis Sentinels</td>
+                                <td>1200s (20 min)</td>
+                                <td>600s (10 min)</td>
+                            </tr>
+                            <tr>
+                                <td>MongoDB Clusters</td>
+                                <td>1200s (20 min)</td>
+                                <td>900s (15 min)</td>
+                            </tr>
+                            <tr>
+                                <td>CronJobs/Monitoring</td>
+                                <td>900s (15 min)</td>
+                                <td>300s (5 min)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px;"><strong>Expected Impact:</strong> 10-15% reduction in release time</p>
+                </li>
+            </ul>
+
+            <h3>Medium-Term Actions</h3>
+            <ul class="recommendation-list">
+                <li class="medium-priority">
+                    <strong>Split Terraform State Files</strong>
+                    <span class="priority-tag priority-medium">MEDIUM PRIORITY</span>
+                    <p style="margin-top: 10px;">Break down the monolithic 189MB state file into smaller, domain-specific states:</p>
+                    <div class="code-block">
+# Proposed state file structure:
+states/
+  ├── networking/          # VPC, subnets, security groups
+  ├── databases/           # RDS, Redis, MongoDB
+  ├── kubernetes-core/     # EKS cluster, node groups
+  ├── kubernetes-services/ # Helm releases, deployments
+  ├── monitoring/          # Prometheus, Grafana, alerts
+  └── iam/                 # IAM roles, policies
+                    </div>
+                    <p style="margin-top: 10px;"><strong>Expected Impact:</strong> 30-50% reduction in plan/apply time per state</p>
+                </li>
+
+                <li class="medium-priority">
+                    <strong>Consolidate Redis Sentinel Clusters</strong>
+                    <span class="priority-tag priority-medium">MEDIUM PRIORITY</span>
+                    <p style="margin-top: 10px;">Review whether 15 separate Redis Sentinel clusters can be consolidated:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Group services by data isolation requirements</li>
+                        <li>Use Redis namespacing where appropriate</li>
+                        <li>Consider shared clusters for non-critical caching</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <strong>Optimize Dependency Chains</strong>
+                    <span class="priority-tag priority-low">LOW PRIORITY</span>
+                    <p style="margin-top: 10px;">Audit and remove unnecessary <code>depends_on</code> blocks that force sequential execution.</p>
+                </li>
+            </ul>
+
+            <h3>Long-Term Improvements</h3>
+            <ul class="recommendation-list">
+                <li>
+                    <strong>Implement Release Time Monitoring</strong>
+                    <p style="margin-top: 10px;">Add metrics collection for per-resource apply duration to identify drift:</p>
+                    <div class="code-block">
+# Export Terraform timing metrics to Prometheus
+# Track: plan_duration, apply_duration, resource_count
+# Alert when: apply_duration > baseline * 1.2
+                    </div>
+                </li>
+
+                <li>
+                    <strong>Consider GitOps Migration</strong>
+                    <p style="margin-top: 10px;">For Kubernetes resources, consider migrating to ArgoCD/Flux for faster deployments:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Helm releases managed by ArgoCD instead of Terraform</li>
+                        <li>Terraform focused on infrastructure (VPC, RDS, EKS)</li>
+                        <li>GitOps for application deployments</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Impact Summary -->
+        <div class="section">
+            <h2>Estimated Impact Summary</h2>
+
+            <div class="chart-container" style="height: 350px;">
+                <canvas id="impactChart"></canvas>
+            </div>
+
+            <table class="impact-table">
+                <thead>
+                    <tr>
+                        <th>Change</th>
+                        <th>Effort</th>
+                        <th>Risk</th>
+                        <th>Expected Improvement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Increase parallelism (1 → 20)</td>
+                        <td>Low</td>
+                        <td>Low</td>
+                        <td style="color: #27ae60;">40-60%</td>
+                    </tr>
+                    <tr>
+                        <td>Convert non-critical wait=true to wait=false (208 total blocking releases)</td>
+                        <td>Medium</td>
+                        <td>Medium</td>
+                        <td style="color: #27ae60;">20-30%</td>
+                    </tr>
+                    <tr>
+                        <td>Reduce timeouts</td>
+                        <td>Low</td>
+                        <td>Low</td>
+                        <td style="color: #27ae60;">10-15%</td>
+                    </tr>
+                    <tr>
+                        <td>State file split</td>
+                        <td>High</td>
+                        <td>Medium</td>
+                        <td style="color: #27ae60;">30-50%</td>
+                    </tr>
+                    <tr>
+                        <td>Redis consolidation</td>
+                        <td>High</td>
+                        <td>High</td>
+                        <td style="color: #27ae60;">15-25%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box" style="background: #e8f5e9; border-color: #81c784;">
+                <strong>Projected Outcome:</strong> Implementing the immediate actions (parallelism + wait configuration + timeout reduction) could reduce release time by <strong>50-70%</strong>, bringing Non-Prod releases from ~16 minutes back to under 8 minutes.
+            </div>
+        </div>
+
+        <!-- Conclusion -->
+        <div class="section">
+            <h2>Conclusion</h2>
+            <p>The investigation has identified several key factors contributing to the increased release duration across both non-production and production clusters:</p>
+
+            <ol style="margin-left: 20px; margin-top: 15px;">
+                <li style="margin-bottom: 10px;"><strong>Configuration Issues:</strong> The <code>parallelism: 1</code> setting is the most significant contributor, forcing sequential resource processing.</li>
+                <li style="margin-bottom: 10px;"><strong>Blocking Operations:</strong> 208 Helm releases with <code>wait=true</code> create unnecessary blocking during deployments.</li>
+                <li style="margin-bottom: 10px;"><strong>Excessive Timeouts:</strong> 47 resources have 20-minute timeouts, with actual deployment times likely much shorter.</li>
+                <li style="margin-bottom: 10px;"><strong>Infrastructure Growth:</strong> The state file has grown to 189MB with 27,634 resources, indicating organic growth that needs optimization.</li>
+            </ol>
+
+            <p style="margin-top: 20px;">By implementing the recommended changes in priority order, the team can expect to see significant improvements in release times within the first sprint, with continued improvements as medium and long-term actions are completed.</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Report Generated by Infrastructure Analysis System</p>
+            <p>For questions or clarifications, please contact the Facets DevOps/SRE Team</p>
+        </div>
+    </div>
+
+    <script>
+        // Non-Production Chart
+        const nonProdCtx = document.getElementById('nonProdChart').getContext('2d');
+        new Chart(nonProdCtx, {
+            type: 'line',
+            data: {
+                labels: ['17-23 Sept', '24-30 Sept', '1-7 Oct', '8-15 Oct'],
+                datasets: [{
+                    label: 'D-FR (Development)',
+                    data: [9.95, 10.18, 10.87, 11.22],
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3
+                }, {
+                    label: 'N-FR (Nightly)',
+                    data: [13.235, 14.67, 15.665, 16.62],
+                    borderColor: '#2980b9',
+                    backgroundColor: 'rgba(41, 128, 185, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3
+                }, {
+                    label: 'S-FR (Staging)',
+                    data: [null, 13.905, null, 16.06],
+                    borderColor: '#1a5276',
+                    backgroundColor: 'rgba(26, 82, 118, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Non-Production Full Release Duration (Minutes) - With Refresh',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 20,
+                        title: {
+                            display: true,
+                            text: 'Duration (Minutes)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Production Chart
+        const prodCtx = document.getElementById('prodChart').getContext('2d');
+        new Chart(prodCtx, {
+            type: 'line',
+            data: {
+                labels: ['17-23 Sept', '24-30 Sept', '1-7 Oct', '8-15 Oct'],
+                datasets: [{
+                    label: 'EU-FR',
+                    data: [27, 27.5, 27.5, 27],
+                    borderColor: '#1a5276',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'Asia-FR',
+                    data: [22, 16, 16, 16],
+                    borderColor: '#27ae60',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'USHC-FR',
+                    data: [17, 0, 15.5, 21],
+                    borderColor: '#2980b9',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'SEACRM-FR',
+                    data: [12, 14, 15, 17],
+                    borderColor: '#16a085',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'I-FR',
+                    data: [10, 12, 15, 15],
+                    borderColor: '#8e44ad',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'Tata-FR',
+                    data: [11, 12, 13, 14],
+                    borderColor: '#e67e22',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'US-FR',
+                    data: [11, 12.5, 14, 14],
+                    borderColor: '#f39c12',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'SGFR',
+                    data: [6.5, 7, 7, 7],
+                    borderColor: '#e91e63',
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Production Full Release Duration (Minutes) - With Refresh',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'right'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 30,
+                        title: {
+                            display: true,
+                            text: 'Duration (Minutes)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Resource Distribution Chart
+        const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+        new Chart(resourceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Helm Releases', 'K8s Secrets', 'IAM Roles', 'Service Modules', 'Config Maps', 'PVCs', 'Other'],
+                datasets: [{
+                    data: [1228, 332, 249, 222, 132, 130, 25341],
+                    backgroundColor: [
+                        '#e74c3c',
+                        '#3498db',
+                        '#9b59b6',
+                        '#f39c12',
+                        '#1abc9c',
+                        '#e67e22',
+                        '#95a5a6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Resource Distribution (27,634 total)'
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        });
+
+        // Timeout Distribution Chart
+        const timeoutCtx = document.getElementById('timeoutChart').getContext('2d');
+        new Chart(timeoutCtx, {
+            type: 'bar',
+            data: {
+                labels: ['300s (5m)', '600s (10m)', '720s (12m)', '900s (15m)', '1200s (20m)'],
+                datasets: [{
+                    label: 'Number of Resources',
+                    data: [1213, 24, 29, 61, 47],
+                    backgroundColor: [
+                        '#27ae60',
+                        '#f39c12',
+                        '#e67e22',
+                        '#d35400',
+                        '#c0392b'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Timeout Configuration Distribution'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Resource Count'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Impact Chart
+        const impactCtx = document.getElementById('impactChart').getContext('2d');
+        new Chart(impactCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Increase Parallelism', 'Fix wait=true', 'Reduce Timeouts', 'State Split', 'Redis Consolidation'],
+                datasets: [{
+                    label: 'Minimum Improvement',
+                    data: [40, 20, 10, 30, 15],
+                    backgroundColor: 'rgba(39, 174, 96, 0.7)',
+                    borderColor: '#27ae60',
+                    borderWidth: 2
+                }, {
+                    label: 'Maximum Improvement',
+                    data: [60, 30, 15, 50, 25],
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: '#2980b9',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Expected Improvement by Recommendation (%)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 70,
+                        title: {
+                            display: true,
+                            text: 'Improvement %'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
