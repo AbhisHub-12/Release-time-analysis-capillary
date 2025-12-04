@@ -474,6 +474,149 @@ resource "kubernetes_ingress_v1" "example_ingress" {
             </div>
         </div>
 
+        <!-- Resource Type Dependency Graph -->
+        <div class="section">
+            <h2>Resource Type Dependency Graph (Top 10)</h2>
+            <p style="margin-bottom: 20px;">Visual representation of how the top 10 resource types are connected through dependency edges:</p>
+
+            <div class="two-column">
+                <div>
+                    <h3>Top 10 Resource Types (Vertices)</h3>
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>Resource Type</th><th>Count</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>scratch_string</td><td>1,478</td></tr>
+                            <tr><td>2</td><td>helm_release</td><td>1,228</td></tr>
+                            <tr><td>3</td><td>facets_tekton_action</td><td>651</td></tr>
+                            <tr><td>4</td><td>random_password</td><td>464</td></tr>
+                            <tr><td>5</td><td>kubernetes_secret</td><td>332</td></tr>
+                            <tr><td>6</td><td>aws_iam_role</td><td>249</td></tr>
+                            <tr><td>7</td><td>kubernetes_config_map</td><td>132</td></tr>
+                            <tr><td>8</td><td>kubernetes_pvc</td><td>130</td></tr>
+                            <tr><td>9</td><td>random_string</td><td>118</td></tr>
+                            <tr><td>10</td><td>aws_iam_role_policy</td><td>112</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h3>Dependency Flow Diagram</h3>
+                    <div style="background: #1a1a2e; padding: 20px; border-radius: 10px; color: white; font-family: monospace; font-size: 12px;">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <span style="background: #e74c3c; padding: 5px 15px; border-radius: 20px;">scratch_string (1,478)</span>
+                        </div>
+                        <div style="text-align: center; color: #f39c12;">
+                            ▲ 28K &nbsp;&nbsp;&nbsp; ▲ 16K &nbsp;&nbsp;&nbsp; ▲ 10K &nbsp;&nbsp;&nbsp; ▲ 8K
+                        </div>
+                        <div style="display: flex; justify-content: space-around; margin: 15px 0;">
+                            <span style="background: #3498db; padding: 5px 10px; border-radius: 15px; font-size: 10px;">random_string</span>
+                            <span style="background: #9b59b6; padding: 5px 10px; border-radius: 15px; font-size: 10px;">helm_release</span>
+                            <span style="background: #e67e22; padding: 5px 10px; border-radius: 15px; font-size: 10px;">iam_policy</span>
+                            <span style="background: #1abc9c; padding: 5px 10px; border-radius: 15px; font-size: 10px;">tekton_action</span>
+                        </div>
+                        <div style="text-align: center; color: #f39c12;">
+                            │ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │
+                        </div>
+                        <div style="text-align: center; color: #f39c12;">
+                            ▼ 27K &nbsp;&nbsp; ▼ 14K &nbsp;&nbsp; ▼ 9K &nbsp;&nbsp;&nbsp; ▼ 6K
+                        </div>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <span style="background: #9b59b6; padding: 5px 15px; border-radius: 20px;">helm_release (1,228)</span>
+                        </div>
+                        <div style="text-align: center; color: #f39c12; margin-top: 10px;">
+                            ▼ 9K &nbsp;&nbsp;&nbsp;&nbsp; ▼ 6K
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 15px;">
+                            <span style="background: #27ae60; padding: 5px 10px; border-radius: 15px; font-size: 10px;">random_password</span>
+                            <span style="background: #e67e22; padding: 5px 10px; border-radius: 15px; font-size: 10px;">aws_iam_role</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Top Dependency Edges (Connections Between Types)</h3>
+            <div class="chart-container" style="height: 400px;">
+                <canvas id="edgeFlowChart"></canvas>
+            </div>
+
+            <h3>How to Reduce These Edges</h3>
+            <div class="two-column">
+                <div class="root-cause-item" style="border-left: 4px solid #e74c3c;">
+                    <h4 style="color: #e74c3c;">Problem: scratch_string Bottleneck</h4>
+                    <p><strong>28,288 edges</strong> from random_string to scratch_string</p>
+                    <p style="margin-top: 10px;"><strong>Why:</strong> Every resource references release_metadata (scratch_string) for tagging.</p>
+                    <p><strong>Solution:</strong> Use locals instead of scratch_string resource for metadata.</p>
+                </div>
+                <div class="root-cause-item" style="border-left: 4px solid #27ae60;">
+                    <h4 style="color: #27ae60;">Optimized Flow</h4>
+                    <p><strong>Current:</strong></p>
+                    <div class="dep-chain" style="font-size: 11px;">
+random_string → scratch_string → helm_release<br>
+(28K edges) &nbsp;&nbsp;&nbsp;&nbsp; (16K edges)
+                    </div>
+                    <p style="margin-top: 10px;"><strong>Optimized:</strong></p>
+                    <div class="dep-chain" style="font-size: 11px; background: #e8f5e9;">
+random_string → helm_release (direct)<br>
+locals.metadata (no dependency created)
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>From Type</th>
+                        <th>To Type</th>
+                        <th>Edges</th>
+                        <th>Can Reduce?</th>
+                        <th>How</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>random_string</td>
+                        <td>scratch_string</td>
+                        <td style="color: #e74c3c;"><strong>28,288</strong></td>
+                        <td><span class="priority-tag priority-high">YES</span></td>
+                        <td>Use locals for metadata</td>
+                    </tr>
+                    <tr>
+                        <td>random_string</td>
+                        <td>helm_release</td>
+                        <td style="color: #e74c3c;"><strong>27,200</strong></td>
+                        <td><span class="priority-tag priority-medium">PARTIAL</span></td>
+                        <td>Review if all helm releases need random strings</td>
+                    </tr>
+                    <tr>
+                        <td>helm_release</td>
+                        <td>scratch_string</td>
+                        <td style="color: #f39c12;"><strong>16,419</strong></td>
+                        <td><span class="priority-tag priority-high">YES</span></td>
+                        <td>Remove metadata dependency from helm</td>
+                    </tr>
+                    <tr>
+                        <td>helm_release</td>
+                        <td>helm_release</td>
+                        <td style="color: #f39c12;"><strong>14,134</strong></td>
+                        <td><span class="priority-tag priority-medium">PARTIAL</span></td>
+                        <td>Review inter-app dependencies</td>
+                    </tr>
+                    <tr>
+                        <td>iam_policy_attach</td>
+                        <td>scratch_string</td>
+                        <td><strong>10,341</strong></td>
+                        <td><span class="priority-tag priority-high">YES</span></td>
+                        <td>IAM doesn't need release metadata</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="success-box">
+                <strong>Potential Reduction:</strong> By converting <code>scratch_string</code> metadata to <code>locals</code>, you can eliminate approximately <strong>63,532 dependency edges</strong> (28K + 16K + 10K + 8K), reducing total edges from 1.48M to ~1.42M.
+            </div>
+        </div>
+
         <!-- Dependency Chain Analysis -->
         <div class="section">
             <h2>Dependency Chain Analysis</h2>
@@ -790,6 +933,50 @@ states/
                     legend: { position: 'top' }
                 },
                 scales: { y: { beginAtZero: true, max: 20 } }
+            }
+        });
+
+        // Edge Flow Chart (Resource Type Dependencies)
+        const edgeFlowCtx = document.getElementById('edgeFlowChart').getContext('2d');
+        new Chart(edgeFlowCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'random_string → scratch_string',
+                    'random_string → helm_release',
+                    'helm_release → scratch_string',
+                    'helm_release → helm_release',
+                    'random_string → random_password',
+                    'iam_policy → scratch_string',
+                    'iam_policy → helm_release',
+                    'helm_release → random_password',
+                    'tekton_action → scratch_string',
+                    'random_string → aws_iam_role'
+                ],
+                datasets: [{
+                    label: 'Dependency Edges',
+                    data: [28288, 27200, 16419, 14134, 12376, 10341, 9249, 9059, 8484, 8432],
+                    backgroundColor: [
+                        '#e74c3c', '#e74c3c', '#f39c12', '#f39c12', '#3498db',
+                        '#e74c3c', '#9b59b6', '#3498db', '#e74c3c', '#3498db'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Top 10 Dependency Edges Between Resource Types' },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Number of Edges' }
+                    }
+                }
             }
         });
 
