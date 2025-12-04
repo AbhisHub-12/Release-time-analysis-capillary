@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Release Duration Analysis Report - Dependency Graph Investigation</title>
+    <title>Release Duration Analysis Report - Removable Dependencies Investigation</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -18,6 +18,7 @@
         .section h3 { color: #2c3e50; margin: 20px 0 15px 0; font-size: 1.3em; }
         .executive-summary { background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%); border-left: 5px solid #f39c12; }
         .critical-finding { background: #fef2f2; border-left: 5px solid #e74c3c; }
+        .actionable { background: #e8f5e9; border-left: 5px solid #27ae60; }
         .chart-container { position: relative; height: 350px; margin: 20px 0; }
         table { width: 100%; border-collapse: collapse; margin: 15px 0; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
@@ -28,20 +29,27 @@
         .metric-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .metric-card.warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
         .metric-card.danger { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); }
+        .metric-card.success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
         .metric-card .value { font-size: 2.5em; font-weight: bold; margin-bottom: 5px; }
         .metric-card .label { font-size: 0.95em; opacity: 0.9; }
         .priority-tag { display: inline-block; padding: 3px 10px; border-radius: 15px; font-size: 0.75em; font-weight: bold; margin-left: 10px; }
         .priority-high { background: #e74c3c; color: white; }
         .priority-medium { background: #f39c12; color: white; }
+        .priority-low { background: #27ae60; color: white; }
         .highlight-box { background: #e3f2fd; border: 1px solid #90caf9; border-radius: 8px; padding: 15px 20px; margin: 15px 0; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 15px 20px; margin: 15px 0; }
+        .success-box { background: #d4edda; border: 1px solid #28a745; border-radius: 8px; padding: 15px 20px; margin: 15px 0; }
         .root-cause-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .root-cause-item h4 { color: #c0392b; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
         .icon { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; background: #e74c3c; color: white; border-radius: 50%; font-size: 14px; }
+        .icon.green { background: #27ae60; }
         .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         @media (max-width: 768px) { .two-column { grid-template-columns: 1fr; } }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 0.9em; }
-        .code-block { background: #2d3436; color: #dfe6e9; padding: 15px 20px; border-radius: 8px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 10px 0; }
-        .dep-chain { background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; margin: 10px 0; border-left: 4px solid #3498db; }
+        .code-block { background: #2d3436; color: #dfe6e9; padding: 15px 20px; border-radius: 8px; font-family: 'Courier New', monospace; overflow-x: auto; margin: 10px 0; font-size: 0.9em; }
+        .dep-chain { background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; margin: 10px 0; border-left: 4px solid #3498db; font-size: 0.85em; }
+        .action-item { background: #e8f5e9; border-left: 4px solid #27ae60; padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+        .action-item h5 { color: #27ae60; margin-bottom: 8px; }
         @media print { .section { break-inside: avoid; } body { background: white; } }
     </style>
 </head>
@@ -50,50 +58,60 @@
         <!-- Header -->
         <div class="header">
             <h1>Release Duration Analysis Report</h1>
-            <div class="subtitle">Dependency Graph Investigation (Vertices & Edges Analysis)</div>
+            <div class="subtitle">Removable Dependencies Investigation - Terraform State Analysis</div>
             <div class="date">Report Generated: December 4, 2025</div>
         </div>
 
         <!-- Executive Summary -->
         <div class="section executive-summary">
             <h2>Executive Summary</h2>
-            <p>This report presents the findings from analyzing the Terraform state file's dependency graph to investigate root causes of increased full release times.</p>
+            <p>This report identifies <strong>removable and unnecessary dependencies</strong> in the Terraform state file that are causing increased release times. Focus is on actionable findings that can reduce release duration.</p>
 
             <div class="metric-cards">
                 <div class="metric-card">
                     <div class="value">5,452</div>
-                    <div class="label">Vertices (Resources)</div>
+                    <div class="label">Total Resources (Vertices)</div>
                 </div>
                 <div class="metric-card danger">
                     <div class="value">1.48M</div>
-                    <div class="label">Edges (Dependencies)</div>
+                    <div class="label">Dependency Edges</div>
                 </div>
                 <div class="metric-card warning">
-                    <div class="value">272</div>
-                    <div class="label">Avg Edges per Vertex</div>
+                    <div class="value">441K</div>
+                    <div class="label">Max Fan-In (example_ingress)</div>
                 </div>
-                <div class="metric-card danger">
-                    <div class="value">21</div>
-                    <div class="label">Critical Path Depth</div>
+                <div class="metric-card success">
+                    <div class="value">5</div>
+                    <div class="label">Key Optimizations Found</div>
                 </div>
             </div>
 
-            <div class="highlight-box">
-                <strong>Key Finding:</strong> The dependency graph shows <strong>1,483,106 edges</strong> connecting 5,452 resources, with an average of 272 dependencies per resource. Major bottleneck resources like <code>base-domain-zone</code> and <code>tooling-vpc</code> block nearly 10,000 downstream resources each.
+            <div class="success-box">
+                <strong>Key Finding:</strong> Resources like <code>example_ingress</code> have <strong>441,210 dependency edges</strong> - far exceeding normal patterns. This indicates unnecessary <code>depends_on</code> configurations that can be removed to reduce release time.
             </div>
         </div>
 
-        <!-- Dependency Graph Basics -->
+        <!-- Understanding Dependencies -->
         <div class="section">
-            <h2>Understanding the Dependency Graph</h2>
+            <h2>Understanding Dependency Analysis</h2>
 
-            <div class="highlight-box" style="background: #f8f9fa; border-color: #dee2e6;">
-                <strong>Graph Theory Basics:</strong>
+            <div class="warning-box">
+                <strong>Important Clarification: Edges vs Resources</strong>
+                <p style="margin-top: 10px;">The "blocks X resources" count represents <strong>dependency edges</strong>, not unique resources. When a resource like <code>base-domain-zone</code> shows "blocks 9,872" it means:</p>
                 <ul style="margin: 10px 0 0 20px;">
-                    <li><strong>Vertices (Nodes)</strong> = Resources (helm_release, aws_iam_role, kubernetes_secret, etc.)</li>
-                    <li><strong>Edges</strong> = Dependencies between resources (Resource A must complete before Resource B)</li>
-                    <li><strong>Critical Path</strong> = Longest chain of dependencies (minimum sequential execution time)</li>
-                    <li><strong>Bottleneck</strong> = Resource that blocks many others from starting</li>
+                    <li>There are 9,872 <strong>dependency connections</strong> pointing to this resource</li>
+                    <li>Multiple resources may have multiple edges to the same bottleneck</li>
+                    <li>Total unique resources in state: <strong>5,452</strong></li>
+                    <li>Total dependency edges: <strong>1,483,106</strong></li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Fan-In vs Fan-Out:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Fan-In (Excessive Dependencies)</strong> = Resource waits for too many others before it can start</li>
+                    <li><strong>Fan-Out (Bottleneck)</strong> = Resource blocks too many others from starting</li>
+                    <li><strong>Goal:</strong> Reduce unnecessary dependencies to allow more parallelization</li>
                 </ul>
             </div>
 
@@ -105,8 +123,8 @@
                         <tr><td>Total Edges (Dependencies)</td><td><strong>1,483,106</strong></td></tr>
                         <tr><td>Resources WITH dependencies</td><td>4,368</td></tr>
                         <tr><td>Resources WITHOUT dependencies</td><td>1,084</td></tr>
-                        <tr><td>Isolated resources</td><td>588</td></tr>
                         <tr><td>Average edges per vertex</td><td>272.03</td></tr>
+                        <tr><td>Critical Path Depth</td><td>21 resources</td></tr>
                     </table>
                 </div>
                 <div>
@@ -118,266 +136,401 @@
             </div>
         </div>
 
-        <!-- Critical Path Analysis -->
-        <div class="section critical-finding">
-            <h2>Root Cause Analysis</h2>
+        <!-- Removable Dependencies Section -->
+        <div class="section actionable">
+            <h2>Removable Dependencies Analysis</h2>
+            <p style="margin-bottom: 20px;">The following dependencies can potentially be removed or optimized to reduce release time:</p>
 
-            <div class="root-cause-item">
-                <h4><span class="icon">1</span> Critical Path Depth: 21 Resources (CRITICAL)</h4>
-                <p>The longest dependency chain requires 21 resources to execute sequentially. This is the <strong>minimum time</strong> required regardless of parallelization.</p>
-                <div class="dep-chain">
-                    <strong>Critical Path:</strong><br>
-                    release_metadata → policy-attach → application-role → app-chart<br>
-                    → policy-attach → application-role → example_ingress<br>
-                    → cluster-base-domain → nginx_ingress_ctlr → issued-cert<br>
-                    → ... (11 more resources)
-                </div>
-                <p style="margin-top: 10px;"><strong>Impact:</strong> If each resource takes ~30 seconds, this chain alone requires ~10.5 minutes minimum.</p>
-            </div>
-
-            <div class="root-cause-item">
-                <h4><span class="icon">2</span> Major Bottleneck Resources (CRITICAL)</h4>
-                <p>These resources must complete before thousands of others can start:</p>
+            <div class="root-cause-item" style="border-left: 4px solid #e74c3c;">
+                <h4><span class="icon">1</span> Resources with EXCESSIVE Dependencies (Fan-In) <span class="priority-tag priority-high">REMOVE</span></h4>
+                <p>These resources wait for an abnormally high number of dependencies - likely due to unnecessary <code>depends_on</code> blocks:</p>
                 <table>
                     <thead>
                         <tr>
                             <th>Resource</th>
                             <th>Type</th>
-                            <th>Blocks</th>
+                            <th>Waits For</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>example_ingress</strong></td>
+                            <td>kubernetes_ingress_v1</td>
+                            <td>441,210 deps</td>
+                            <td><span class="priority-tag priority-high">AUDIT</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>mysql_grants</strong></td>
+                            <td>mysql_grant</td>
+                            <td>107,440 deps</td>
+                            <td><span class="priority-tag priority-high">AUDIT</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>mysql_user</strong></td>
+                            <td>mysql_user</td>
+                            <td>107,372 deps</td>
+                            <td><span class="priority-tag priority-high">AUDIT</span></td>
+                        </tr>
+                        <tr>
+                            <td>random_password</td>
+                            <td>random_string</td>
+                            <td>107,236 deps</td>
+                            <td><span class="priority-tag priority-medium">REVIEW</span></td>
+                        </tr>
+                        <tr>
+                            <td>qasuite_cronjob</td>
+                            <td>helm_release</td>
+                            <td>36,363 deps</td>
+                            <td><span class="priority-tag priority-medium">REVIEW</span></td>
+                        </tr>
+                        <tr>
+                            <td>cronjob</td>
+                            <td>helm_release</td>
+                            <td>23,715 deps</td>
+                            <td><span class="priority-tag priority-medium">REVIEW</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="action-item">
+                    <h5>Recommended Action:</h5>
+                    <p>Review the Terraform modules for these resources. Look for explicit <code>depends_on</code> blocks that may be pulling in entire module outputs unnecessarily. Remove dependencies that Terraform would infer automatically.</p>
+                </div>
+            </div>
+
+            <div class="root-cause-item" style="border-left: 4px solid #f39c12;">
+                <h4><span class="icon">2</span> Bottleneck Resources (Fan-Out) <span class="priority-tag priority-medium">OPTIMIZE</span></h4>
+                <p>These resources block many others - consider if all downstream resources truly need this dependency:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Type</th>
+                            <th>Blocks (edges)</th>
                             <th>Impact</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>base-domain-zone</strong></td>
-                            <td>data</td>
-                            <td>9,872 resources</td>
+                            <td>data.aws_route53_zone</td>
+                            <td>9,872 edges</td>
                             <td><span class="priority-tag priority-high">CRITICAL</span></td>
                         </tr>
                         <tr>
                             <td><strong>tooling-vpc</strong></td>
-                            <td>data</td>
-                            <td>9,872 resources</td>
+                            <td>data.aws_vpc</td>
+                            <td>9,872 edges</td>
                             <td><span class="priority-tag priority-high">CRITICAL</span></td>
                         </tr>
                         <tr>
                             <td><strong>release_metadata</strong></td>
                             <td>scratch_string</td>
-                            <td>9,547 resources</td>
+                            <td>9,547 edges</td>
                             <td><span class="priority-tag priority-high">CRITICAL</span></td>
                         </tr>
                         <tr>
-                            <td>aws_security_group</td>
-                            <td>this</td>
-                            <td>4,523 resources</td>
+                            <td>db_parameter_group</td>
+                            <td>aws_db_parameter_group</td>
+                            <td>4,528 edges</td>
                             <td><span class="priority-tag priority-medium">HIGH</span></td>
                         </tr>
                         <tr>
-                            <td>aws_rds_cluster</td>
-                            <td>this</td>
-                            <td>3,688 resources</td>
-                            <td><span class="priority-tag priority-medium">HIGH</span></td>
-                        </tr>
-                        <tr>
-                            <td>aws_db_subnet_group</td>
-                            <td>this</td>
-                            <td>4,515 resources</td>
+                            <td>master_password</td>
+                            <td>random_password</td>
+                            <td>4,528 edges</td>
                             <td><span class="priority-tag priority-medium">HIGH</span></td>
                         </tr>
                     </tbody>
                 </table>
-                <p style="margin-top: 10px;"><strong>Why this matters:</strong> Any delay in these resources cascades to thousands of downstream resources.</p>
+
+                <div class="action-item">
+                    <h5>Recommended Action:</h5>
+                    <p>These data sources and metadata resources may be fetched once and passed to modules. Verify if every resource truly needs a direct dependency on these. Consider moving to <code>terraform_remote_state</code> or locals for static data.</p>
+                </div>
             </div>
 
-            <div class="root-cause-item">
-                <h4><span class="icon">3</span> Resources with Excessive Dependencies</h4>
-                <p>These resources wait for an extremely high number of other resources to complete:</p>
+            <div class="root-cause-item" style="border-left: 4px solid #9b59b6;">
+                <h4><span class="icon">3</span> Scratch String Dependencies <span class="priority-tag priority-medium">REVIEW</span></h4>
+                <p>Many resources have dependencies on <code>scratch_string</code> resources which are metadata - these may be unnecessary:</p>
                 <table>
                     <thead>
                         <tr>
                             <th>Resource</th>
-                            <th>Waits For</th>
-                            <th>Issue</th>
+                            <th>Scratch Deps</th>
+                            <th>Total Deps</th>
+                            <th>Percentage</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>example_ingress</strong></td>
-                            <td>441,210 resources</td>
-                            <td>Excessive fan-in dependency</td>
-                        </tr>
-                        <tr>
                             <td>mysql_grants</td>
-                            <td>107,440 resources</td>
-                            <td>Waits for too many resources</td>
+                            <td>14,144</td>
+                            <td>107,440</td>
+                            <td>13.2%</td>
                         </tr>
                         <tr>
                             <td>mysql_user</td>
-                            <td>107,372 resources</td>
-                            <td>Waits for too many resources</td>
+                            <td>14,144</td>
+                            <td>107,372</td>
+                            <td>13.2%</td>
                         </tr>
                         <tr>
                             <td>qasuite_cronjob</td>
-                            <td>36,363 resources</td>
-                            <td>Helm release with huge deps</td>
+                            <td>4,784</td>
+                            <td>36,363</td>
+                            <td>13.2%</td>
                         </tr>
                         <tr>
                             <td>cronjob</td>
-                            <td>23,715 resources</td>
-                            <td>Helm release with huge deps</td>
+                            <td>3,120</td>
+                            <td>23,715</td>
+                            <td>13.2%</td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="root-cause-item">
-                <h4><span class="icon">4</span> Helm Releases with High Dependency Count</h4>
-                <p>These Helm releases have unusually high dependency counts, causing delays:</p>
-                <table>
-                    <thead>
                         <tr>
-                            <th>Helm Release</th>
-                            <th>Dependencies</th>
+                            <td>mysql_grants_sibling</td>
+                            <td>3,120</td>
+                            <td>23,700</td>
+                            <td>13.2%</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>qasuite_cronjob</td><td>36,363</td></tr>
-                        <tr><td>cronjob</td><td>23,715</td></tr>
-                        <tr><td>statefulset</td><td>14,229</td></tr>
-                        <tr><td>prometheus-mysql-exporters</td><td>4,917</td></tr>
-                        <tr><td>mongo-exporters</td><td>3,528</td></tr>
-                        <tr><td>bootstrap_jobs</td><td>1,583</td></tr>
                     </tbody>
                 </table>
-            </div>
 
-            <div class="root-cause-item">
-                <h4><span class="icon">5</span> Large Database Fleet Creating Dependency Chains</h4>
-                <p>The infrastructure includes numerous database instances that create complex dependency chains:</p>
-                <div class="two-column">
-                    <div>
-                        <h4 style="color: #2c3e50;">MySQL/Aurora Clusters (10)</h4>
-                        <ul style="margin-left: 20px;">
-                            <li>mysql_airflow</li>
-                            <li>mysql_bootorgdb</li>
-                            <li>mysql_campaigns</li>
-                            <li>mysql_crimson</li>
-                            <li>mysql_dbmaster</li>
-                            <li>mysql_glue</li>
-                            <li>mysql_metadb</li>
-                            <li>mysql_nsadmin</li>
-                            <li>mysql_reon</li>
-                            <li>mysql_solutions</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 style="color: #2c3e50;">Redis Sentinel Clusters (15)</h4>
-                        <ul style="margin-left: 20px;">
-                            <li>api-redis-sentinel</li>
-                            <li>apilock-redis-sentinel</li>
-                            <li>coupons-redis-sentinel</li>
-                            <li>data-redis-sentinel</li>
-                            <li>incentives-redis-sentinel</li>
-                            <li>loyalty-redis-sentinel</li>
-                            <li>nifi-redis-sentinel</li>
-                            <li>orchestrator-redis-sentinel</li>
-                            <li>+ 7 more clusters</li>
-                        </ul>
-                    </div>
+                <div class="action-item">
+                    <h5>Recommended Action:</h5>
+                    <p><code>scratch_string</code> resources are typically used for metadata/release tracking. If they're being passed as dependencies to downstream resources unnecessarily, remove those dependency links.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Recommendations -->
+        <!-- Dependency Chain Analysis -->
         <div class="section">
-            <h2>Recommendations</h2>
+            <h2>Dependency Chain Analysis</h2>
 
-            <div class="root-cause-item" style="border-left: 4px solid #e74c3c;">
-                <h4 style="color: #e74c3c;">1. Investigate Bottleneck Resource Delays</h4>
-                <p>Check why these resources take time during releases:</p>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li><strong>base-domain-zone</strong> - Is DNS lookup slow?</li>
-                    <li><strong>tooling-vpc</strong> - Is VPC data fetch taking time?</li>
-                    <li><strong>release_metadata</strong> - Why does this block 9,547 resources?</li>
-                </ul>
-                <p style="margin-top: 10px;"><strong>Action:</strong> Need release logs to see actual timing for these resources.</p>
+            <div class="highlight-box">
+                <strong>How to Read Dependency Chains:</strong>
+                <p style="margin-top: 10px;">Resource A --> Resource B means B cannot start until A completes. Longer chains = more sequential execution = longer release time.</p>
             </div>
 
-            <div class="root-cause-item" style="border-left: 4px solid #f39c12;">
-                <h4 style="color: #f39c12;">2. Review Excessive Dependencies</h4>
-                <p>The <code>example_ingress</code> resource waiting for 441,210 resources is abnormal. This could be:</p>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>Overly broad <code>depends_on</code> configuration</li>
-                    <li>Module-level dependencies pulling in everything</li>
-                    <li>Unnecessary implicit dependencies</li>
-                </ul>
-            </div>
+            <h3>Common Dependency Patterns (Over-Templating)</h3>
+            <p>These patterns affect many resources - indicates systematic over-dependency:</p>
 
-            <div class="root-cause-item" style="border-left: 4px solid #3498db;">
-                <h4 style="color: #3498db;">3. Split State Files by Domain</h4>
-                <p>Breaking down 5,452 resources into smaller states would reduce dependency complexity:</p>
-                <div class="code-block">
-# Proposed state file structure:
-states/
-  ├── networking/          # VPC, subnets, security groups
-  ├── databases/           # RDS, Redis, MongoDB
-  ├── kubernetes-core/     # EKS cluster, base config
-  ├── kubernetes-apps/     # Helm releases, deployments
-  └── monitoring/          # Prometheus, exporters
-                </div>
-            </div>
-
-            <div class="root-cause-item" style="border-left: 4px solid #27ae60;">
-                <h4 style="color: #27ae60;">4. Analyze Release Logs for Timing</h4>
-                <p>To identify exact bottlenecks, we need access to:</p>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>Terraform apply logs showing per-resource timing</li>
-                    <li>CI/CD pipeline logs (Jenkins/GitLab)</li>
-                    <li>Facets control plane release logs</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Next Steps -->
-        <div class="section">
-            <h2>Next Steps: Log Analysis Required</h2>
-
-            <div class="highlight-box" style="background: #fff3cd; border-color: #ffc107;">
-                <strong>Important:</strong> The Terraform state file shows the dependency structure but does NOT contain execution timing logs. To understand WHY specific resources take time, we need access to release logs.
-            </div>
-
-            <h3>Logs Needed for Further Investigation</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Log Type</th>
-                        <th>What It Shows</th>
-                        <th>Where to Find</th>
+                        <th>Pattern</th>
+                        <th>Affected Resources</th>
+                        <th>Issue</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Terraform Apply Logs</td>
-                        <td>Time taken per resource</td>
-                        <td>CI/CD pipeline output</td>
+                        <td><code>aws_route53_zone + aws_vpc + scratch_string</code></td>
+                        <td>1,094 resources</td>
+                        <td>Too many resources depend on base infra</td>
                     </tr>
                     <tr>
-                        <td>Helm Release Logs</td>
-                        <td>Pod startup times, errors</td>
-                        <td>kubectl logs, Kubernetes events</td>
+                        <td><code>aws_db_parameter_group + kubernetes_config_map + ...</code></td>
+                        <td>760 resources</td>
+                        <td>Database params blocking K8s resources</td>
                     </tr>
                     <tr>
-                        <td>AWS CloudTrail</td>
-                        <td>API call latencies</td>
-                        <td>AWS Console</td>
+                        <td><code>aws_appautoscaling_* + aws_db_* + ...</code></td>
+                        <td>436 resources</td>
+                        <td>Autoscaling tied to database resources</td>
                     </tr>
                     <tr>
-                        <td>Facets Release Logs</td>
-                        <td>Full release timing breakdown</td>
-                        <td>Facets Control Plane</td>
+                        <td><code>aws_caller_identity + aws_iam_* + ...</code></td>
+                        <td>256 resources</td>
+                        <td>IAM resources chained unnecessarily</td>
                     </tr>
                 </tbody>
             </table>
+
+            <h3>Sample Dependency Chain (Deep Dive)</h3>
+            <div class="dep-chain">
+                <strong>base-domain-zone</strong> (data.aws_route53_zone)<br>
+                &nbsp;&nbsp;&nbsp;|<br>
+                &nbsp;&nbsp;&nbsp;+--> release_metadata (scratch_string) [blocks 9,547]<br>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+--> mysql_user [waits for 107,372]<br>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+--> mysql_grants [waits for 107,440]<br>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+--> cronjob (helm_release) [waits for 23,715]<br>
+                &nbsp;&nbsp;&nbsp;|<br>
+                &nbsp;&nbsp;&nbsp;+--> example_ingress (kubernetes_ingress_v1) [waits for 441,210]<br>
+                <br>
+                <em>This chain shows how a single data source cascades delays through the system</em>
+            </div>
+        </div>
+
+        <!-- Actionable Recommendations -->
+        <div class="section actionable">
+            <h2>Actionable Recommendations to Reduce Release Time</h2>
+
+            <div class="root-cause-item" style="border-left: 4px solid #e74c3c;">
+                <h4 style="color: #e74c3c;"><span class="icon">1</span> Remove Unnecessary depends_on Blocks</h4>
+                <p><strong>Impact:</strong> HIGH | <strong>Effort:</strong> MEDIUM</p>
+                <p style="margin-top: 10px;">Many resources have explicit <code>depends_on</code> that Terraform would infer automatically from references. Check modules for:</p>
+                <div class="code-block">
+# BEFORE (unnecessary explicit dependency):
+resource "kubernetes_ingress_v1" "example_ingress" {
+  depends_on = [module.level2]  # Pulls in 441K dependencies!
+  ...
+}
+
+# AFTER (let Terraform infer from references):
+resource "kubernetes_ingress_v1" "example_ingress" {
+  # Only reference what you actually need
+  metadata {
+    annotations = {
+      "cert-arn" = aws_acm_certificate.cert.arn  # Terraform infers this dep
+    }
+  }
+}
+                </div>
+            </div>
+
+            <div class="root-cause-item" style="border-left: 4px solid #f39c12;">
+                <h4 style="color: #f39c12;"><span class="icon">2</span> Split release_metadata Dependency</h4>
+                <p><strong>Impact:</strong> HIGH | <strong>Effort:</strong> MEDIUM</p>
+                <p style="margin-top: 10px;">The single <code>release_metadata</code> resource blocks 9,547 others. Consider:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Breaking into smaller, targeted metadata resources</li>
+                    <li>Using locals instead of a resource for static metadata</li>
+                    <li>Only passing metadata to resources that actually need it</li>
+                </ul>
+            </div>
+
+            <div class="root-cause-item" style="border-left: 4px solid #3498db;">
+                <h4 style="color: #3498db;"><span class="icon">3</span> Review base-domain-zone and tooling-vpc</h4>
+                <p><strong>Impact:</strong> HIGH | <strong>Effort:</strong> LOW</p>
+                <p style="margin-top: 10px;">These data sources block ~10,000 dependency edges each:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Verify if every resource truly needs this data</li>
+                    <li>Consider caching the values in locals</li>
+                    <li>Move to separate state file for foundational infra</li>
+                </ul>
+                <div class="code-block">
+# Instead of every module referencing:
+data.aws_route53_zone.base-domain-zone
+
+# Use locals defined once:
+locals {
+  base_domain_zone_id = data.aws_route53_zone.base-domain-zone.zone_id
+}
+
+# Then reference:
+zone_id = local.base_domain_zone_id
+                </div>
+            </div>
+
+            <div class="root-cause-item" style="border-left: 4px solid #9b59b6;">
+                <h4 style="color: #9b59b6;"><span class="icon">4</span> Audit mysql_grants and mysql_user Dependencies</h4>
+                <p><strong>Impact:</strong> MEDIUM | <strong>Effort:</strong> MEDIUM</p>
+                <p style="margin-top: 10px;">These resources wait for 100K+ dependencies each - abnormally high. Check if:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Module-level <code>depends_on</code> is pulling in unnecessary deps</li>
+                    <li>References to entire module outputs instead of specific values</li>
+                    <li>Implicit dependencies through string interpolation</li>
+                </ul>
+            </div>
+
+            <div class="root-cause-item" style="border-left: 4px solid #27ae60;">
+                <h4 style="color: #27ae60;"><span class="icon green">5</span> Split State Files by Domain (Long-term)</h4>
+                <p><strong>Impact:</strong> HIGH | <strong>Effort:</strong> HIGH</p>
+                <p style="margin-top: 10px;">With 5,452 resources and 1.48M edges, consider splitting:</p>
+                <div class="code-block">
+# Proposed structure:
+states/
+  ├── foundation/     # VPC, Route53, base networking
+  │                   # Release separately, less frequently
+  │
+  ├── databases/      # RDS, Redis, MongoDB
+  │                   # Has its own dependency graph
+  │
+  ├── kubernetes/     # EKS cluster, namespaces, RBAC
+  │                   # Core K8s infrastructure
+  │
+  └── applications/   # Helm releases, ConfigMaps, Secrets
+                      # Most frequently released
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Table -->
+        <div class="section">
+            <h2>Summary: Dependencies to Remove/Optimize</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Current State</th>
+                        <th>Action</th>
+                        <th>Expected Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>example_ingress</td>
+                        <td>441,210 deps (Fan-In)</td>
+                        <td>Remove module-level depends_on</td>
+                        <td>Major reduction</td>
+                    </tr>
+                    <tr>
+                        <td>mysql_grants / mysql_user</td>
+                        <td>107K deps each</td>
+                        <td>Audit module dependencies</td>
+                        <td>Major reduction</td>
+                    </tr>
+                    <tr>
+                        <td>base-domain-zone</td>
+                        <td>Blocks 9,872 edges</td>
+                        <td>Cache in locals, review need</td>
+                        <td>Moderate reduction</td>
+                    </tr>
+                    <tr>
+                        <td>release_metadata</td>
+                        <td>Blocks 9,547 edges</td>
+                        <td>Split or convert to locals</td>
+                        <td>Moderate reduction</td>
+                    </tr>
+                    <tr>
+                        <td>scratch_string deps</td>
+                        <td>13% of all deps</td>
+                        <td>Remove unnecessary metadata deps</td>
+                        <td>Minor reduction</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="section">
+            <h2>Next Steps</h2>
+
+            <div class="highlight-box">
+                <strong>To proceed with optimization:</strong>
+                <ol style="margin: 10px 0 0 20px;">
+                    <li><strong>Identify the Terraform modules</strong> containing the problematic resources (example_ingress, mysql_grants, etc.)</li>
+                    <li><strong>Review depends_on blocks</strong> in those modules - look for broad dependencies like <code>depends_on = [module.xyz]</code></li>
+                    <li><strong>Test changes</strong> in development environment first</li>
+                    <li><strong>Measure release time</strong> before and after changes</li>
+                    <li><strong>Apply to other environments</strong> if successful</li>
+                </ol>
+            </div>
+
+            <h3>Files to Investigate</h3>
+            <p>Based on the analysis, focus on these resource types in your Terraform codebase:</p>
+            <ul style="margin: 10px 0 0 20px;">
+                <li><code>module.level2.module.ingress_*.kubernetes_ingress_v1.example_ingress</code></li>
+                <li><code>module.application.mysql_grant.mysql_grants</code></li>
+                <li><code>module.application.mysql_user.mysql_user</code></li>
+                <li><code>module.level2.module.environment.scratch_string.release_metadata</code></li>
+            </ul>
         </div>
 
         <!-- Reference Section -->
