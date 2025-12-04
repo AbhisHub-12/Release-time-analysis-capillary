@@ -304,6 +304,176 @@
             </div>
         </div>
 
+        <!-- Module-Level depends_on Problem - DETAILED EXPLANATION -->
+        <div class="section critical-finding">
+            <h2>Critical Issue: Module-Level depends_on</h2>
+
+            <div class="warning-box">
+                <strong>ROOT CAUSE:</strong> When you write <code>depends_on = [module.xyz]</code>, Terraform creates a dependency edge from <strong>EVERY resource inside that module</strong> to your resource. This is why <code>example_ingress</code> has 441,210 dependencies.
+            </div>
+
+            <h3>What module.level2 Contains (~5,000+ resources)</h3>
+            <div class="dep-chain">
+module.level2 contains:<br>
+├── helm_release.app1<br>
+├── helm_release.app2<br>
+├── helm_release.app3<br>
+├── ... (1,228 helm releases)<br>
+├── kubernetes_secret.secret1<br>
+├── kubernetes_secret.secret2<br>
+├── ... (332 secrets)<br>
+├── aws_iam_role.role1<br>
+├── ... (249 IAM roles)<br>
+└── ... (total ~5,000+ resources)
+            </div>
+
+            <div class="two-column">
+                <div class="root-cause-item" style="border-left: 4px solid #e74c3c;">
+                    <h4 style="color: #e74c3c;">BAD: Module-Level depends_on</h4>
+                    <div class="code-block">
+resource "kubernetes_ingress_v1" "example_ingress" {
+  depends_on = [module.level2]  # BAD!
+}
+                    </div>
+                    <p style="margin-top: 10px;"><strong>What Terraform does:</strong></p>
+                    <div class="dep-chain" style="font-size: 0.8em;">
+example_ingress must wait for:<br>
+├── helm_release.app1 ──────────┐<br>
+├── helm_release.app2 ──────────┤<br>
+├── ... (1,228 helm releases) ──┤<br>
+├── kubernetes_secret.* ────────┼──→ example_ingress<br>
+├── aws_iam_role.* ─────────────┤<br>
+└── ALL 5,000+ resources ───────┘<br>
+<br>
+<strong>Total: 441,210 dependency edges!</strong>
+                    </div>
+                </div>
+                <div class="root-cause-item" style="border-left: 4px solid #27ae60;">
+                    <h4 style="color: #27ae60;">GOOD: Specific depends_on</h4>
+                    <div class="code-block">
+resource "kubernetes_ingress_v1" "example_ingress" {
+  depends_on = [
+    helm_release.nginx_ingress_controller
+  ]  # Just 1 dep!
+}
+                    </div>
+                    <p style="margin-top: 10px;"><strong>What Terraform does:</strong></p>
+                    <div class="dep-chain" style="font-size: 0.8em;">
+example_ingress must wait for:<br>
+└── helm_release.nginx_controller ──→ example_ingress<br>
+<br>
+<br>
+<br>
+<br>
+<strong>Total: 1 dependency edge</strong>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Impact on Release Time</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Dependencies</th>
+                        <th>Execution</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>depends_on = [module.level2]</code></td>
+                        <td>441,210</td>
+                        <td>Sequential (waits for ALL)</td>
+                        <td style="color: #e74c3c;"><strong>Hours</strong></td>
+                    </tr>
+                    <tr>
+                        <td><code>depends_on = [helm_release.nginx]</code></td>
+                        <td>1</td>
+                        <td>Parallel (only waits for nginx)</td>
+                        <td style="color: #27ae60;"><strong>Seconds</strong></td>
+                    </tr>
+                    <tr>
+                        <td>No depends_on (use references)</td>
+                        <td>Auto-inferred</td>
+                        <td>Optimal parallelization</td>
+                        <td style="color: #27ae60;"><strong>Optimal</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Visual Timeline Comparison</h3>
+            <div class="two-column">
+                <div>
+                    <h4 style="color: #e74c3c;">WITH module depends_on (Current)</h4>
+                    <div class="dep-chain" style="background: #fef2f2;">
+Time 0min   │ app1 starts<br>
+Time 0.5min │ app1 done, app2 starts<br>
+Time 1min   │ app2 done, app3 starts<br>
+...         │ (5,000 resources one by one)<br>
+Time 150min │ All done, ingress starts<br>
+Time 151min │ Ingress completes<br>
+<br>
+<strong style="color: #e74c3c;">Total: ~150+ minutes</strong>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="color: #27ae60;">WITHOUT module depends_on (Fixed)</h4>
+                    <div class="dep-chain" style="background: #e8f5e9;">
+Time 0min   │ app1, app2, app3, nginx<br>
+            │ ALL start in parallel<br>
+Time 0.5min │ nginx done<br>
+Time 0.5min │ ingress starts immediately<br>
+Time 1min   │ ingress completes<br>
+            │ other apps continue parallel<br>
+<br>
+<strong style="color: #27ae60;">Total: ~1-2 minutes</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-item">
+                <h5>How to Find This in Your Terraform Code</h5>
+                <div class="code-block">
+# Search for module-level depends_on:
+grep -r "depends_on.*module\." --include="*.tf"
+
+# Look for patterns like:
+depends_on = [module.level2]
+depends_on = [module.environment]
+depends_on = [module.mysql_dbmaster]
+                </div>
+            </div>
+
+            <div class="action-item">
+                <h5>The Fix</h5>
+                <div class="code-block">
+# BEFORE (causes 441K dependencies):
+resource "kubernetes_ingress_v1" "example_ingress" {
+  depends_on = [module.level2]
+}
+
+# AFTER (only 2 dependencies):
+resource "kubernetes_ingress_v1" "example_ingress" {
+  depends_on = [
+    helm_release.nginx_ingress_controller,
+    aws_acm_certificate.cert
+  ]
+}
+
+# BEST (let Terraform auto-infer):
+resource "kubernetes_ingress_v1" "example_ingress" {
+  # Reference values directly - Terraform infers dependency
+  metadata {
+    annotations = {
+      "cert-arn" = aws_acm_certificate.cert.arn
+    }
+  }
+}
+                </div>
+            </div>
+        </div>
+
         <!-- Dependency Chain Analysis -->
         <div class="section">
             <h2>Dependency Chain Analysis</h2>
