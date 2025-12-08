@@ -65,7 +65,7 @@
         <!-- Executive Summary -->
         <div class="section executive-summary">
             <h2>Executive Summary</h2>
-            <p>This report identifies <strong>removable and unnecessary dependencies</strong> in the Terraform state file that are causing increased release times. Focus is on actionable findings that can reduce release duration.</p>
+            <p>This report presents a comprehensive analysis of the Terraform state file dependency graph to identify optimization opportunities for reducing release duration. The investigation focuses on module-level dependencies, resource type relationships, and critical bottlenecks affecting deployment performance.</p>
 
             <div class="metric-cards">
                 <div class="metric-card">
@@ -87,7 +87,7 @@
             </div>
 
             <div class="success-box">
-                <strong>Key Finding:</strong> Resources like <code>example_ingress</code> have <strong>441,210 dependency edges</strong> - far exceeding normal patterns. This indicates unnecessary <code>depends_on</code> configurations that can be removed to reduce release time.
+                <strong>Key Finding:</strong> Analysis reveals that certain resources, such as <code>example_ingress</code>, exhibit <strong>441,210 dependency edges</strong>, significantly exceeding expected patterns. This indicates potential optimization opportunities in the <code>depends_on</code> configurations within the Terraform modules.
             </div>
         </div>
 
