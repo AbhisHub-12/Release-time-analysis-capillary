@@ -234,7 +234,7 @@
                         <td><strong>ingress_intouch-a</strong></td>
                         <td>10</td>
                         <td style="color: #e74c3c;"><strong>444,602</strong></td>
-                        <td><span class="priority-tag priority-high">CRITICAL - 1000x higher than normal</span></td>
+                        <td><span class="priority-tag priority-high">CRITICAL</span></td>
                     </tr>
                     <tr>
                         <td>ingress_tools-a</td>
@@ -641,46 +641,6 @@ Time 1min   │ ingress completes<br>
                 </div>
             </div>
 
-            <div class="action-item">
-                <h5>How to Find This in Your Terraform Code</h5>
-                <div class="code-block">
-# Search for module-level depends_on:
-grep -r "depends_on.*module\." --include="*.tf"
-
-# Look for patterns like:
-depends_on = [module.level2]
-depends_on = [module.environment]
-depends_on = [module.mysql_dbmaster]
-                </div>
-            </div>
-
-            <div class="action-item">
-                <h5>The Fix</h5>
-                <div class="code-block">
-# BEFORE (causes 441K dependencies):
-resource "kubernetes_ingress_v1" "example_ingress" {
-  depends_on = [module.level2]
-}
-
-# AFTER (only 2 dependencies):
-resource "kubernetes_ingress_v1" "example_ingress" {
-  depends_on = [
-    helm_release.nginx_ingress_controller,
-    aws_acm_certificate.cert
-  ]
-}
-
-# BEST (let Terraform auto-infer):
-resource "kubernetes_ingress_v1" "example_ingress" {
-  # Reference values directly - Terraform infers dependency
-  metadata {
-    annotations = {
-      "cert-arn" = aws_acm_certificate.cert.arn
-    }
-  }
-}
-                </div>
-            </div>
         </div>
 
         <!-- Resource Type Dependency Graph -->
@@ -747,29 +707,6 @@ resource "kubernetes_ingress_v1" "example_ingress" {
             <h3>Top Dependency Edges (Connections Between Types)</h3>
             <div class="chart-container" style="height: 400px;">
                 <canvas id="edgeFlowChart"></canvas>
-            </div>
-
-            <h3>How to Reduce These Edges</h3>
-            <div class="two-column">
-                <div class="root-cause-item" style="border-left: 4px solid #e74c3c;">
-                    <h4 style="color: #e74c3c;">Problem: scratch_string Bottleneck</h4>
-                    <p><strong>28,288 edges</strong> from random_string to scratch_string</p>
-                    <p style="margin-top: 10px;"><strong>Why:</strong> Every resource references release_metadata (scratch_string) for tagging.</p>
-                    <p><strong>Solution:</strong> Use locals instead of scratch_string resource for metadata.</p>
-                </div>
-                <div class="root-cause-item" style="border-left: 4px solid #27ae60;">
-                    <h4 style="color: #27ae60;">Optimized Flow</h4>
-                    <p><strong>Current:</strong></p>
-                    <div class="dep-chain" style="font-size: 11px;">
-random_string → scratch_string → helm_release<br>
-(28K edges) &nbsp;&nbsp;&nbsp;&nbsp; (16K edges)
-                    </div>
-                    <p style="margin-top: 10px;"><strong>Optimized:</strong></p>
-                    <div class="dep-chain" style="font-size: 11px; background: #e8f5e9;">
-random_string → helm_release (direct)<br>
-locals.metadata (no dependency created)
-                    </div>
-                </div>
             </div>
 
             <table>
