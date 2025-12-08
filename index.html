@@ -91,6 +91,215 @@
             </div>
         </div>
 
+        <!-- CRITICAL: Module-Level Dependency Analysis - TOP SECTION -->
+        <div class="section critical-finding">
+            <h2>Critical: Module-Level Dependency Analysis</h2>
+
+            <div class="warning-box" style="background: #fef2f2; border-color: #e74c3c;">
+                <strong style="color: #e74c3c;">CRITICAL FINDING:</strong> <code>module.level2.module.ingress_intouch-a</code> has <strong>444,602 dependencies</strong> with only 10 resources. This is abnormal - an ingress module should only depend on nginx controller and certificate (~50-100 deps).
+            </div>
+
+            <h3>Top 10 Modules by Dependency Count (Fan-In)</h3>
+            <p>These modules wait for the most dependencies before they can execute:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Module</th>
+                        <th>Resources</th>
+                        <th>Dependencies</th>
+                        <th>Avg/Resource</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fef2f2;">
+                        <td>1</td>
+                        <td><strong>module.application</strong></td>
+                        <td>15</td>
+                        <td style="color: #e74c3c;"><strong>577,871</strong></td>
+                        <td>38,525</td>
+                        <td><span class="priority-tag priority-high">CRITICAL</span></td>
+                    </tr>
+                    <tr style="background: #fef2f2;">
+                        <td>2</td>
+                        <td><strong>module.level2.module.ingress_intouch-a</strong></td>
+                        <td>10</td>
+                        <td style="color: #e74c3c;"><strong>444,602</strong></td>
+                        <td>44,460</td>
+                        <td><span class="priority-tag priority-high">CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>module.iam.module.application_roles</td>
+                        <td>4</td>
+                        <td>44,280</td>
+                        <td>11,070</td>
+                        <td><span class="priority-tag priority-medium">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>module.mysql_dbmaster.sharded_mysql_schema_seed</td>
+                        <td>3</td>
+                        <td>25,548</td>
+                        <td>8,516</td>
+                        <td><span class="priority-tag priority-medium">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>module.mysql_dbmaster.mysql_schema_seed</td>
+                        <td>3</td>
+                        <td>22,364</td>
+                        <td>7,455</td>
+                        <td><span class="priority-tag priority-medium">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>module.mysql_reon.mysql_schema_seed</td>
+                        <td>2</td>
+                        <td>22,272</td>
+                        <td>11,136</td>
+                        <td><span class="priority-tag priority-medium">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>module.mysql_metadb.mysql_schema_seed</td>
+                        <td>2</td>
+                        <td>9,607</td>
+                        <td>4,804</td>
+                        <td><span class="priority-tag priority-medium">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>module.level2.module.service_internal-intouch-api-a</td>
+                        <td>6</td>
+                        <td>5,642</td>
+                        <td>940</td>
+                        <td><span class="priority-tag priority-medium">REVIEW</span></td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>module.level2.module.service_intouch-api-read-a</td>
+                        <td>6</td>
+                        <td>5,642</td>
+                        <td>940</td>
+                        <td><span class="priority-tag priority-medium">REVIEW</span></td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>module.level2.module.service_async-a</td>
+                        <td>6</td>
+                        <td>5,372</td>
+                        <td>895</td>
+                        <td><span class="priority-tag priority-medium">REVIEW</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Module Categories Overview</h3>
+            <div class="metric-cards">
+                <div class="metric-card">
+                    <div class="value">470</div>
+                    <div class="label">Service Modules</div>
+                </div>
+                <div class="metric-card warning">
+                    <div class="value">1,185</div>
+                    <div class="label">MySQL Modules</div>
+                </div>
+                <div class="metric-card danger">
+                    <div class="value">5</div>
+                    <div class="label">Ingress Modules</div>
+                </div>
+                <div class="metric-card">
+                    <div class="value">129</div>
+                    <div class="label">Monitoring Modules</div>
+                </div>
+            </div>
+
+            <h3>Ingress Modules Comparison</h3>
+            <div class="warning-box">
+                <strong>Why ingress_intouch-a is Critical:</strong> Compare with other ingress modules - they have 50-450 dependencies, but ingress_intouch-a has 444,602. This indicates a <code>depends_on = [module.level2]</code> or similar broad dependency.
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ingress Module</th>
+                        <th>Resources</th>
+                        <th>Dependencies</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fef2f2;">
+                        <td><strong>ingress_intouch-a</strong></td>
+                        <td>10</td>
+                        <td style="color: #e74c3c;"><strong>444,602</strong></td>
+                        <td><span class="priority-tag priority-high">CRITICAL - 1000x higher than normal</span></td>
+                    </tr>
+                    <tr>
+                        <td>ingress_tools-a</td>
+                        <td>12</td>
+                        <td style="color: #27ae60;">448</td>
+                        <td><span class="priority-tag priority-low">NORMAL</span></td>
+                    </tr>
+                    <tr>
+                        <td>ingress_solutions-a</td>
+                        <td>10</td>
+                        <td style="color: #27ae60;">294</td>
+                        <td><span class="priority-tag priority-low">NORMAL</span></td>
+                    </tr>
+                    <tr>
+                        <td>ingress_glue-a</td>
+                        <td>10</td>
+                        <td style="color: #27ae60;">64</td>
+                        <td><span class="priority-tag priority-low">NORMAL</span></td>
+                    </tr>
+                    <tr>
+                        <td>ingress_hydra-a</td>
+                        <td>10</td>
+                        <td style="color: #27ae60;">54</td>
+                        <td><span class="priority-tag priority-low">NORMAL</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Service Modules Pattern (Top 10)</h3>
+            <div class="highlight-box">
+                <strong>Pattern Observed:</strong> 470 service modules, each with ~6 resources and 900-5,600 dependencies. This consistent pattern suggests a template-level issue in the service module.
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Service Module</th>
+                        <th>Resources</th>
+                        <th>Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>service_internal-intouch-api-a</td><td>6</td><td>5,642</td></tr>
+                    <tr><td>2</td><td>service_intouch-api-read-a</td><td>6</td><td>5,642</td></tr>
+                    <tr><td>3</td><td>service_async-a</td><td>6</td><td>5,372</td></tr>
+                    <tr><td>4</td><td>service_intouch-api-a</td><td>6</td><td>5,172</td></tr>
+                    <tr><td>5</td><td>service_campaign-shard-a</td><td>6</td><td>4,502</td></tr>
+                    <tr><td>6</td><td>service_workflowmanager-runner-a</td><td>6</td><td>4,332</td></tr>
+                    <tr><td>7</td><td>service_workflowmanager-runner-standalone-a</td><td>6</td><td>4,122</td></tr>
+                    <tr><td>8</td><td>service_intouch-api-v3-jsvt</td><td>6</td><td>3,970</td></tr>
+                    <tr><td>9</td><td>service_peb-a</td><td>6</td><td>3,551</td></tr>
+                    <tr><td>10</td><td>service_emf-a</td><td>6</td><td>3,495</td></tr>
+                </tbody>
+            </table>
+
+            <div class="action-item">
+                <h5>Immediate Actions Required</h5>
+                <ol style="margin-left: 20px;">
+                    <li><strong>ingress_intouch-a:</strong> Find and remove <code>depends_on = [module.level2]</code> - should only depend on nginx + cert</li>
+                    <li><strong>module.application:</strong> Review why 15 resources have 577K dependencies - likely module-level depends_on</li>
+                    <li><strong>Service module template:</strong> Check common template for unnecessary dependencies</li>
+                </ol>
+            </div>
+        </div>
+
         <!-- Understanding Dependencies -->
         <div class="section">
             <h2>Understanding Dependency Analysis</h2>
@@ -470,195 +679,6 @@ resource "kubernetes_ingress_v1" "example_ingress" {
     }
   }
 }
-                </div>
-            </div>
-        </div>
-
-        <!-- Module-Level Dependency Analysis -->
-        <div class="section critical-finding">
-            <h2>Module-Level Dependency Analysis</h2>
-            <p style="margin-bottom: 20px;">Analysis of dependencies at the Terraform module level (e.g., <code>module.level2.module.service_*</code>):</p>
-
-            <div class="metric-cards">
-                <div class="metric-card">
-                    <div class="value">470</div>
-                    <div class="label">Service Modules</div>
-                </div>
-                <div class="metric-card warning">
-                    <div class="value">1,185</div>
-                    <div class="label">MySQL Modules</div>
-                </div>
-                <div class="metric-card danger">
-                    <div class="value">5</div>
-                    <div class="label">Ingress Modules</div>
-                </div>
-                <div class="metric-card">
-                    <div class="value">129</div>
-                    <div class="label">Monitoring Modules</div>
-                </div>
-            </div>
-
-            <h3>Top Modules by Dependency Count (Fan-In)</h3>
-            <p>These modules wait for the most dependencies before they can execute:</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Module</th>
-                        <th>Resources</th>
-                        <th>Dependencies</th>
-                        <th>Avg per Resource</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.application</strong></td>
-                        <td>15</td>
-                        <td style="color: #e74c3c;"><strong>577,871</strong></td>
-                        <td>38,525</td>
-                        <td><span class="priority-tag priority-high">CRITICAL</span></td>
-                    </tr>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.module.ingress_intouch-a</strong></td>
-                        <td>10</td>
-                        <td style="color: #e74c3c;"><strong>444,602</strong></td>
-                        <td>44,460</td>
-                        <td><span class="priority-tag priority-high">CRITICAL</span></td>
-                    </tr>
-                    <tr>
-                        <td>module.iam.module.application_roles</td>
-                        <td>4</td>
-                        <td>44,280</td>
-                        <td>11,070</td>
-                        <td><span class="priority-tag priority-medium">HIGH</span></td>
-                    </tr>
-                    <tr>
-                        <td>module.mysql_dbmaster.sharded_mysql_schema_seed</td>
-                        <td>3</td>
-                        <td>25,548</td>
-                        <td>8,516</td>
-                        <td><span class="priority-tag priority-medium">HIGH</span></td>
-                    </tr>
-                    <tr>
-                        <td>module.mysql_dbmaster.mysql_schema_seed</td>
-                        <td>3</td>
-                        <td>22,364</td>
-                        <td>7,455</td>
-                        <td><span class="priority-tag priority-medium">HIGH</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>Service Modules Analysis (module.level2.module.service_*)</h3>
-            <div class="highlight-box">
-                <strong>Total:</strong> 470 service modules | <strong>Pattern:</strong> Each service has ~6 resources with ~900-5,600 dependencies
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Service Module</th>
-                        <th>Resources</th>
-                        <th>Dependencies</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>service_internal-intouch-api-a</td><td>6</td><td>5,642</td></tr>
-                    <tr><td>service_intouch-api-read-a</td><td>6</td><td>5,642</td></tr>
-                    <tr><td>service_async-a</td><td>6</td><td>5,372</td></tr>
-                    <tr><td>service_intouch-api-a</td><td>6</td><td>5,172</td></tr>
-                    <tr><td>service_campaign-shard-a</td><td>6</td><td>4,502</td></tr>
-                </tbody>
-            </table>
-
-            <h3>Ingress Modules Analysis (module.level2.module.ingress_*)</h3>
-            <div class="warning-box">
-                <strong>Critical Finding:</strong> <code>ingress_intouch-a</code> has <strong>444,602 dependencies</strong> with only 10 resources. This is abnormal - ingress should only depend on nginx controller and certificate.
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Ingress Module</th>
-                        <th>Resources</th>
-                        <th>Dependencies</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>ingress_intouch-a</strong></td>
-                        <td>10</td>
-                        <td style="color: #e74c3c;"><strong>444,602</strong></td>
-                        <td><span class="priority-tag priority-high">CRITICAL</span></td>
-                    </tr>
-                    <tr>
-                        <td>ingress_tools-a</td>
-                        <td>12</td>
-                        <td>448</td>
-                        <td><span class="priority-tag priority-low">OK</span></td>
-                    </tr>
-                    <tr>
-                        <td>ingress_solutions-a</td>
-                        <td>10</td>
-                        <td>294</td>
-                        <td><span class="priority-tag priority-low">OK</span></td>
-                    </tr>
-                    <tr>
-                        <td>ingress_glue-a</td>
-                        <td>10</td>
-                        <td>64</td>
-                        <td><span class="priority-tag priority-low">OK</span></td>
-                    </tr>
-                    <tr>
-                        <td>ingress_hydra-a</td>
-                        <td>10</td>
-                        <td>54</td>
-                        <td><span class="priority-tag priority-low">OK</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>Cross-Module Dependency Hotspots</h3>
-            <p>Modules with highest dependencies on OTHER modules:</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Module</th>
-                        <th>Cross-Module Deps</th>
-                        <th>Depends Most On</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>module.application</strong></td>
-                        <td style="color: #e74c3c;"><strong>1,541,352</strong></td>
-                        <td>level2 (576K), mysql_dbmaster (27K), mysql_nsadmin (27K)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>ingress_intouch-a</strong></td>
-                        <td style="color: #e74c3c;"><strong>1,293,158</strong></td>
-                        <td>level2 (442K), mysql_dbmaster (86K), mysql_metadb (43K)</td>
-                    </tr>
-                    <tr>
-                        <td>application_roles</td>
-                        <td>118,032</td>
-                        <td>level2 (44K), mysql_dbmaster (2K)</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="action-item">
-                <h5>Module-Level Optimization Actions</h5>
-                <div class="two-column">
-                    <div>
-                        <strong>1. module.application</strong>
-                        <p>Has <code>depends_on = [module.level2]</code> which pulls 576K deps</p>
-                        <p><strong>Fix:</strong> Only depend on specific resources needed (database, secrets)</p>
-                    </div>
-                    <div>
-                        <strong>2. ingress_intouch-a</strong>
-                        <p>444K deps for just 10 resources is abnormal</p>
-                        <p><strong>Fix:</strong> Should only depend on nginx controller + ACM cert</p>
-                    </div>
                 </div>
             </div>
         </div>
