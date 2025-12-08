@@ -249,6 +249,314 @@ random_string: random_password, random_username_suffix<br>
 external: serverless_build
             </div>
 
+            <h3>Dependency Breakdown: module.level2.module.ingress_intouch-a (444,602 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>442,274</strong></td>
+                                <td>99.5%</td>
+                            </tr>
+                            <tr><td>root</td><td>1,892</td><td>0.4%</td></tr>
+                            <tr><td>iam</td><td>436</td><td>0.1%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> 99.5% of dependencies come from <code>module.level2</code>. An ingress module should only depend on ~50-100 resources (nginx controller + cert).
+                    </div>
+                </div>
+                <div>
+                    <h4>By Resource Type</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Resource Type</th><th>Count</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>scratch_string</td><td>58,624</td><td>13.2%</td></tr>
+                            <tr><td>helm_release</td><td>56,374</td><td>12.7%</td></tr>
+                            <tr><td>random_password</td><td>25,632</td><td>5.8%</td></tr>
+                            <tr><td>aws_iam_role</td><td>17,512</td><td>3.9%</td></tr>
+                            <tr><td>kubernetes_service</td><td>14,656</td><td>3.3%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.iam.module.application_roles (44,280 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>44,100</strong></td>
+                                <td>99.6%</td>
+                            </tr>
+                            <tr><td>root</td><td>156</td><td>0.4%</td></tr>
+                            <tr><td>iam</td><td>24</td><td>0.0%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> IAM roles should not depend on application deployment modules. This 99.6% dependency on <code>module.level2</code> is unnecessary.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (4 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+aws_iam_role: application_role<br>
+aws_iam_role_policy: application_policy<br>
+aws_iam_policy_attachment: role_attach<br>
+data.aws_iam_policy_document: trust_policy
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.mysql_dbmaster.sharded_mysql_schema_seed (25,548 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>23,956</strong></td>
+                                <td>93.8%</td>
+                            </tr>
+                            <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.0%</td></tr>
+                            <tr><td>root</td><td>308</td><td>1.2%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> MySQL schema seed should only depend on the MySQL instance (~10-50 deps). 93.8% dependency on <code>module.level2</code> indicates module-level depends_on.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (3 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+mysql_database: sharded_schema<br>
+null_resource: schema_seed<br>
+local_file: sql_file
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.mysql_dbmaster.mysql_schema_seed (22,364 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>20,772</strong></td>
+                                <td>92.9%</td>
+                            </tr>
+                            <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.7%</td></tr>
+                            <tr><td>root</td><td>308</td><td>1.4%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> 92.9% dependency on <code>module.level2</code>. Schema seeding should only wait for database to be ready.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (3 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+mysql_database: main_schema<br>
+null_resource: schema_seed<br>
+local_file: sql_file
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.mysql_reon.mysql_schema_seed (22,272 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>20,680</strong></td>
+                                <td>92.8%</td>
+                            </tr>
+                            <tr><td>mysql_reon</td><td>1,284</td><td>5.8%</td></tr>
+                            <tr><td>root</td><td>308</td><td>1.4%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> Same pattern as other MySQL modules - 92.8% unnecessary dependency on <code>module.level2</code>.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (2 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+mysql_database: reon_schema<br>
+null_resource: schema_seed
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.mysql_metadb.mysql_schema_seed (9,607 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>8,923</strong></td>
+                                <td>92.9%</td>
+                            </tr>
+                            <tr><td>mysql_metadb</td><td>548</td><td>5.7%</td></tr>
+                            <tr><td>root</td><td>136</td><td>1.4%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> All MySQL schema modules share the same dependency pattern on <code>module.level2</code>.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (2 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+mysql_database: metadb_schema<br>
+null_resource: schema_seed
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.level2.module.service_internal-intouch-api-a (5,642 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>5,124</strong></td>
+                                <td>90.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>412</td><td>7.3%</td></tr>
+                            <tr><td>iam</td><td>106</td><td>1.9%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> Service modules depend on 90.8% from <code>module.level2</code> - indicates template-level issue.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (6 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+helm_release: service_deployment<br>
+kubernetes_service: service<br>
+kubernetes_config_map: config<br>
+kubernetes_secret: secrets<br>
+aws_iam_role: service_role<br>
+scratch_string: metadata
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.level2.module.service_intouch-api-read-a (5,642 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>5,124</strong></td>
+                                <td>90.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>412</td><td>7.3%</td></tr>
+                            <tr><td>iam</td><td>106</td><td>1.9%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> Identical pattern to other service modules - same template causing dependency explosion.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (6 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+helm_release: service_deployment<br>
+kubernetes_service: service<br>
+kubernetes_config_map: config<br>
+kubernetes_secret: secrets<br>
+aws_iam_role: service_role<br>
+scratch_string: metadata
+                    </div>
+                </div>
+            </div>
+
+            <h3>Dependency Breakdown: module.level2.module.service_async-a (5,372 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>4,878</strong></td>
+                                <td>90.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>392</td><td>7.3%</td></tr>
+                            <tr><td>iam</td><td>102</td><td>1.9%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> All 470 service modules share this pattern - fixing the template will resolve dependencies for all.
+                    </div>
+                </div>
+                <div>
+                    <h4>Resources (6 total)</h4>
+                    <div class="dep-chain" style="font-size: 0.9em;">
+helm_release: service_deployment<br>
+kubernetes_service: service<br>
+kubernetes_config_map: config<br>
+kubernetes_secret: secrets<br>
+aws_iam_role: service_role<br>
+scratch_string: metadata
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box" style="margin-top: 20px;">
+                <strong>Summary of All Top 10 Modules:</strong>
+                <p style="margin-top: 10px;">All modules show <strong>90-99.8% of dependencies coming from module.level2</strong>. This consistent pattern confirms a systematic issue with <code>depends_on = [module.level2]</code> in the Terraform templates.</p>
+            </div>
+
             <h3>Module Categories Overview</h3>
             <div class="metric-cards">
                 <div class="metric-card">
