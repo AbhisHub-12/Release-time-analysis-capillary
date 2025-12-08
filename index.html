@@ -577,46 +577,60 @@ scratch_string: metadata
                 </div>
             </div>
 
-            <h3>Ingress Modules Comparison</h3>
+            <h3>Ingress Resources Comparison</h3>
+            <div class="highlight-box" style="background: #e3f2fd; border-color: #2196f3; margin-bottom: 15px;">
+                <strong>Terminology:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Facets Resource Type:</strong> The type in Facets UI (e.g., <code>ingress</code>, <code>service</code>)</li>
+                    <li><strong>Facets Resource Name:</strong> The name given to the resource (e.g., <code>intouch-a</code>, <code>peb-a</code>)</li>
+                    <li><strong>Terraform Module:</strong> <code>module.level2.module.{type}_{name}</code> (e.g., <code>ingress_intouch-a</code>)</li>
+                </ul>
+            </div>
             <div class="warning-box">
-                <strong>Why ingress_intouch-a is Critical:</strong> Compare with other ingress modules - they have 50-450 dependencies, but ingress_intouch-a has 444,602. This indicates a <code>depends_on = [module.level2]</code> or similar broad dependency.
+                <strong>Why ingress intouch-a is Critical:</strong> Compare with other ingress resources - they have 50-450 dependencies, but intouch-a has 444,602. This indicates a <code>depends_on = [module.level2]</code> or similar broad dependency.
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th>Ingress Module</th>
-                        <th>Resources</th>
+                        <th>Facets Type</th>
+                        <th>Facets Name</th>
+                        <th>TF Resources</th>
                         <th>Dependencies</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr style="background: #fef2f2;">
-                        <td><strong>ingress_intouch-a</strong></td>
+                        <td>ingress</td>
+                        <td><strong>intouch-a</strong></td>
                         <td>10</td>
                         <td style="color: #e74c3c;"><strong>444,602</strong></td>
                         <td><span class="priority-tag priority-high">CRITICAL</span></td>
                     </tr>
                     <tr>
-                        <td>ingress_tools-a</td>
+                        <td>ingress</td>
+                        <td>tools-a</td>
                         <td>12</td>
                         <td style="color: #27ae60;">448</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
                     <tr>
-                        <td>ingress_solutions-a</td>
+                        <td>ingress</td>
+                        <td>solutions-a</td>
                         <td>10</td>
                         <td style="color: #27ae60;">294</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
                     <tr>
-                        <td>ingress_glue-a</td>
+                        <td>ingress</td>
+                        <td>glue-a</td>
                         <td>10</td>
                         <td style="color: #27ae60;">64</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
                     <tr>
-                        <td>ingress_hydra-a</td>
+                        <td>ingress</td>
+                        <td>hydra-a</td>
                         <td>10</td>
                         <td style="color: #27ae60;">54</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
@@ -624,30 +638,31 @@ scratch_string: metadata
                 </tbody>
             </table>
 
-            <h3>Service Modules Pattern (Top 10)</h3>
+            <h3>Service Resources Pattern (Top 10)</h3>
             <div class="highlight-box">
-                <strong>Pattern Observed:</strong> 470 service modules, each with ~6 resources and 900-5,600 dependencies. This consistent pattern suggests a template-level issue in the service module.
+                <strong>Pattern Observed:</strong> 470 service resources, each with ~6 Terraform resources and 900-5,600 dependencies. This consistent pattern suggests a template-level issue in the service module.
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Service Module</th>
-                        <th>Resources</th>
+                        <th>Facets Type</th>
+                        <th>Facets Name</th>
+                        <th>TF Resources</th>
                         <th>Dependencies</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>1</td><td>service_internal-intouch-api-a</td><td>6</td><td>5,642</td></tr>
-                    <tr><td>2</td><td>service_intouch-api-read-a</td><td>6</td><td>5,642</td></tr>
-                    <tr><td>3</td><td>service_async-a</td><td>6</td><td>5,372</td></tr>
-                    <tr><td>4</td><td>service_intouch-api-a</td><td>6</td><td>5,172</td></tr>
-                    <tr><td>5</td><td>service_campaign-shard-a</td><td>6</td><td>4,502</td></tr>
-                    <tr><td>6</td><td>service_workflowmanager-runner-a</td><td>6</td><td>4,332</td></tr>
-                    <tr><td>7</td><td>service_workflowmanager-runner-standalone-a</td><td>6</td><td>4,122</td></tr>
-                    <tr><td>8</td><td>service_intouch-api-v3-jsvt</td><td>6</td><td>3,970</td></tr>
-                    <tr><td>9</td><td>service_peb-a</td><td>6</td><td>3,551</td></tr>
-                    <tr><td>10</td><td>service_emf-a</td><td>6</td><td>3,495</td></tr>
+                    <tr><td>1</td><td>service</td><td>internal-intouch-api-a</td><td>6</td><td>5,642</td></tr>
+                    <tr><td>2</td><td>service</td><td>intouch-api-read-a</td><td>6</td><td>5,642</td></tr>
+                    <tr><td>3</td><td>service</td><td>async-a</td><td>6</td><td>5,372</td></tr>
+                    <tr><td>4</td><td>service</td><td>intouch-api-a</td><td>6</td><td>5,172</td></tr>
+                    <tr><td>5</td><td>service</td><td>campaign-shard-a</td><td>6</td><td>4,502</td></tr>
+                    <tr><td>6</td><td>service</td><td>workflowmanager-runner-a</td><td>6</td><td>4,332</td></tr>
+                    <tr><td>7</td><td>service</td><td>workflowmanager-runner-standalone-a</td><td>6</td><td>4,122</td></tr>
+                    <tr><td>8</td><td>service</td><td>intouch-api-v3-jsvt</td><td>6</td><td>3,970</td></tr>
+                    <tr><td>9</td><td>service</td><td>peb-a</td><td>6</td><td>3,551</td></tr>
+                    <tr><td>10</td><td>service</td><td>emf-a</td><td>6</td><td>3,495</td></tr>
                 </tbody>
             </table>
 
