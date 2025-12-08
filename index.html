@@ -91,6 +91,51 @@
             </div>
         </div>
 
+        <!-- Understanding Dependencies -->
+        <div class="section">
+            <h2>Understanding Dependency Analysis</h2>
+
+            <div class="warning-box">
+                <strong>Important Clarification: Edges vs Resources</strong>
+                <p style="margin-top: 10px;">The "blocks X resources" count represents <strong>dependency edges</strong>, not unique resources. When a resource like <code>base-domain-zone</code> shows "blocks 9,872" it means:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>There are 9,872 <strong>dependency connections</strong> pointing to this resource</li>
+                    <li>Multiple resources may have multiple edges to the same bottleneck</li>
+                    <li>Total unique resources in state: <strong>5,452</strong></li>
+                    <li>Total dependency edges: <strong>1,483,106</strong></li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Fan-In vs Fan-Out:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Fan-In (Excessive Dependencies)</strong> = Resource waits for too many others before it can start</li>
+                    <li><strong>Fan-Out (Bottleneck)</strong> = Resource blocks too many others from starting</li>
+                    <li><strong>Goal:</strong> Reduce unnecessary dependencies to allow more parallelization</li>
+                </ul>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Graph Statistics</h3>
+                    <table>
+                        <tr><td>Total Vertices (Resources)</td><td><strong>5,452</strong></td></tr>
+                        <tr><td>Total Edges (Dependencies)</td><td><strong>1,483,106</strong></td></tr>
+                        <tr><td>Resources WITH dependencies</td><td>4,368</td></tr>
+                        <tr><td>Resources WITHOUT dependencies</td><td>1,084</td></tr>
+                        <tr><td>Average edges per vertex</td><td>272.03</td></tr>
+                        <tr><td>Critical Path Depth</td><td>21 resources</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <h3>Resource Type Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="resourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- CRITICAL: Module-Level Dependency Analysis - TOP SECTION -->
         <div class="section critical-finding">
             <h2>Critical: Module-Level Dependency Analysis</h2>
@@ -196,367 +241,6 @@
                 </tbody>
             </table>
 
-            <h3>Dependency Breakdown: module.application (577,871 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>576,450</strong></td>
-                                <td>99.8%</td>
-                            </tr>
-                            <tr><td>root</td><td>732</td><td>0.1%</td></tr>
-                            <tr><td>application</td><td>626</td><td>0.1%</td></tr>
-                            <tr><td>iam</td><td>63</td><td>0.0%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> 99.8% of dependencies come from <code>module.level2</code>. This indicates a broad <code>depends_on = [module.level2]</code> configuration.
-                    </div>
-                </div>
-                <div>
-                    <h4>By Resource Type</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Resource Type</th><th>Count</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>scratch_string</td><td>76,128</td><td>13.2%</td></tr>
-                            <tr><td>helm_release</td><td>73,217</td><td>12.7%</td></tr>
-                            <tr><td>random_password</td><td>33,306</td><td>5.8%</td></tr>
-                            <tr><td>aws_iam_role</td><td>22,755</td><td>3.9%</td></tr>
-                            <tr><td>kubernetes_service</td><td>19,032</td><td>3.3%</td></tr>
-                            <tr><td>null_resource</td><td>15,376</td><td>2.7%</td></tr>
-                            <tr><td>kubernetes_config_map</td><td>13,908</td><td>2.4%</td></tr>
-                            <tr><td>kubernetes_secret</td><td>12,444</td><td>2.2%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <h4>Resources in module.application (15 total)</h4>
-            <div class="dep-chain">
-helm_release: bootstrap_jobs, cronjob, qasuite_cronjob, statefulset<br>
-mysql_grant: mysql_grants, mysql_grants_sibling<br>
-mysql_user: mysql_user, mysql_user_sibling<br>
-null_resource: modified_cronjobs, qa_deployment, serverless-deploy<br>
-random_string: random_password, random_username_suffix<br>
-external: serverless_build
-            </div>
-
-            <h3>Dependency Breakdown: module.level2.module.ingress_intouch-a (444,602 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>442,274</strong></td>
-                                <td>99.5%</td>
-                            </tr>
-                            <tr><td>root</td><td>1,892</td><td>0.4%</td></tr>
-                            <tr><td>iam</td><td>436</td><td>0.1%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> 99.5% of dependencies come from <code>module.level2</code>. An ingress module should only depend on ~50-100 resources (nginx controller + cert).
-                    </div>
-                </div>
-                <div>
-                    <h4>By Resource Type</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Resource Type</th><th>Count</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>scratch_string</td><td>58,624</td><td>13.2%</td></tr>
-                            <tr><td>helm_release</td><td>56,374</td><td>12.7%</td></tr>
-                            <tr><td>random_password</td><td>25,632</td><td>5.8%</td></tr>
-                            <tr><td>aws_iam_role</td><td>17,512</td><td>3.9%</td></tr>
-                            <tr><td>kubernetes_service</td><td>14,656</td><td>3.3%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.iam.module.application_roles (44,280 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>44,100</strong></td>
-                                <td>99.6%</td>
-                            </tr>
-                            <tr><td>root</td><td>156</td><td>0.4%</td></tr>
-                            <tr><td>iam</td><td>24</td><td>0.0%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> IAM roles should not depend on application deployment modules. This 99.6% dependency on <code>module.level2</code> is unnecessary.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (4 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-aws_iam_role: application_role<br>
-aws_iam_role_policy: application_policy<br>
-aws_iam_policy_attachment: role_attach<br>
-data.aws_iam_policy_document: trust_policy
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.mysql_dbmaster.sharded_mysql_schema_seed (25,548 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>23,956</strong></td>
-                                <td>93.8%</td>
-                            </tr>
-                            <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.0%</td></tr>
-                            <tr><td>root</td><td>308</td><td>1.2%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> MySQL schema seed should only depend on the MySQL instance (~10-50 deps). 93.8% dependency on <code>module.level2</code> indicates module-level depends_on.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (3 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-mysql_database: sharded_schema<br>
-null_resource: schema_seed<br>
-local_file: sql_file
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.mysql_dbmaster.mysql_schema_seed (22,364 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>20,772</strong></td>
-                                <td>92.9%</td>
-                            </tr>
-                            <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.7%</td></tr>
-                            <tr><td>root</td><td>308</td><td>1.4%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> 92.9% dependency on <code>module.level2</code>. Schema seeding should only wait for database to be ready.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (3 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-mysql_database: main_schema<br>
-null_resource: schema_seed<br>
-local_file: sql_file
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.mysql_reon.mysql_schema_seed (22,272 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>20,680</strong></td>
-                                <td>92.8%</td>
-                            </tr>
-                            <tr><td>mysql_reon</td><td>1,284</td><td>5.8%</td></tr>
-                            <tr><td>root</td><td>308</td><td>1.4%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> Same pattern as other MySQL modules - 92.8% unnecessary dependency on <code>module.level2</code>.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (2 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-mysql_database: reon_schema<br>
-null_resource: schema_seed
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.mysql_metadb.mysql_schema_seed (9,607 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>8,923</strong></td>
-                                <td>92.9%</td>
-                            </tr>
-                            <tr><td>mysql_metadb</td><td>548</td><td>5.7%</td></tr>
-                            <tr><td>root</td><td>136</td><td>1.4%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> All MySQL schema modules share the same dependency pattern on <code>module.level2</code>.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (2 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-mysql_database: metadb_schema<br>
-null_resource: schema_seed
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.level2.module.service_internal-intouch-api-a (5,642 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>5,124</strong></td>
-                                <td>90.8%</td>
-                            </tr>
-                            <tr><td>root</td><td>412</td><td>7.3%</td></tr>
-                            <tr><td>iam</td><td>106</td><td>1.9%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> Service modules depend on 90.8% from <code>module.level2</code> - indicates template-level issue.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (6 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-helm_release: service_deployment<br>
-kubernetes_service: service<br>
-kubernetes_config_map: config<br>
-kubernetes_secret: secrets<br>
-aws_iam_role: service_role<br>
-scratch_string: metadata
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.level2.module.service_intouch-api-read-a (5,642 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>5,124</strong></td>
-                                <td>90.8%</td>
-                            </tr>
-                            <tr><td>root</td><td>412</td><td>7.3%</td></tr>
-                            <tr><td>iam</td><td>106</td><td>1.9%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> Identical pattern to other service modules - same template causing dependency explosion.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (6 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-helm_release: service_deployment<br>
-kubernetes_service: service<br>
-kubernetes_config_map: config<br>
-kubernetes_secret: secrets<br>
-aws_iam_role: service_role<br>
-scratch_string: metadata
-                    </div>
-                </div>
-            </div>
-
-            <h3>Dependency Breakdown: module.level2.module.service_async-a (5,372 deps)</h3>
-            <div class="two-column">
-                <div>
-                    <h4>By Module (Where dependencies come from)</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background: #fef2f2;">
-                                <td><strong>module.level2</strong></td>
-                                <td style="color: #e74c3c;"><strong>4,878</strong></td>
-                                <td>90.8%</td>
-                            </tr>
-                            <tr><td>root</td><td>392</td><td>7.3%</td></tr>
-                            <tr><td>iam</td><td>102</td><td>1.9%</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="warning-box" style="margin-top: 10px;">
-                        <strong>Finding:</strong> All 470 service modules share this pattern - fixing the template will resolve dependencies for all.
-                    </div>
-                </div>
-                <div>
-                    <h4>Resources (6 total)</h4>
-                    <div class="dep-chain" style="font-size: 0.9em;">
-helm_release: service_deployment<br>
-kubernetes_service: service<br>
-kubernetes_config_map: config<br>
-kubernetes_secret: secrets<br>
-aws_iam_role: service_role<br>
-scratch_string: metadata
-                    </div>
-                </div>
-            </div>
-
-            <div class="success-box" style="margin-top: 20px;">
-                <strong>Summary of All Top 10 Modules:</strong>
-                <p style="margin-top: 10px;">All modules show <strong>90-99.8% of dependencies coming from module.level2</strong>. This consistent pattern confirms a systematic issue with <code>depends_on = [module.level2]</code> in the Terraform templates.</p>
-            </div>
-
             <h3>Module Categories Overview</h3>
             <div class="metric-cards">
                 <div class="metric-card">
@@ -581,9 +265,9 @@ scratch_string: metadata
             <div class="highlight-box" style="background: #e3f2fd; border-color: #2196f3; margin-bottom: 15px;">
                 <strong>Terminology:</strong>
                 <ul style="margin: 10px 0 0 20px;">
-                    <li><strong>Facets Resource Type:</strong> The type in Facets UI (e.g., <code>ingress</code>, <code>service</code>)</li>
-                    <li><strong>Facets Resource Name:</strong> The name given to the resource (e.g., <code>intouch-a</code>, <code>peb-a</code>)</li>
-                    <li><strong>Terraform Module:</strong> <code>module.level2.module.{type}_{name}</code> (e.g., <code>ingress_intouch-a</code>)</li>
+                    <li><strong>Resource Type:</strong> The type in Facets UI (e.g., <code>ingress</code>, <code>service</code>, <code>mysql</code>)</li>
+                    <li><strong>Resource Name:</strong> The name given to the resource (e.g., <code>intouch-a</code>, <code>peb-a</code>, <code>metadb</code>)</li>
+                    <li><strong>Terraform Module Path:</strong> <code>module.level2.module.{type}_{name}</code> (e.g., <code>module.level2.module.ingress_intouch-a</code>)</li>
                 </ul>
             </div>
             <div class="warning-box">
@@ -592,9 +276,8 @@ scratch_string: metadata
             <table>
                 <thead>
                     <tr>
-                        <th>Facets Type</th>
-                        <th>Facets Name</th>
-                        <th>TF Resources</th>
+                        <th>Resource Type</th>
+                        <th>Resource Name</th>
                         <th>Dependencies</th>
                         <th>Status</th>
                     </tr>
@@ -603,35 +286,30 @@ scratch_string: metadata
                     <tr style="background: #fef2f2;">
                         <td>ingress</td>
                         <td><strong>intouch-a</strong></td>
-                        <td>10</td>
                         <td style="color: #e74c3c;"><strong>444,602</strong></td>
                         <td><span class="priority-tag priority-high">CRITICAL</span></td>
                     </tr>
                     <tr>
                         <td>ingress</td>
                         <td>tools-a</td>
-                        <td>12</td>
                         <td style="color: #27ae60;">448</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
                     <tr>
                         <td>ingress</td>
                         <td>solutions-a</td>
-                        <td>10</td>
                         <td style="color: #27ae60;">294</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
                     <tr>
                         <td>ingress</td>
                         <td>glue-a</td>
-                        <td>10</td>
                         <td style="color: #27ae60;">64</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
                     <tr>
                         <td>ingress</td>
                         <td>hydra-a</td>
-                        <td>10</td>
                         <td style="color: #27ae60;">54</td>
                         <td><span class="priority-tag priority-low">NORMAL</span></td>
                     </tr>
@@ -640,29 +318,28 @@ scratch_string: metadata
 
             <h3>Service Resources Pattern (Top 10)</h3>
             <div class="highlight-box">
-                <strong>Pattern Observed:</strong> 470 service resources, each with ~6 Terraform resources and 900-5,600 dependencies. This consistent pattern suggests a template-level issue in the service module.
+                <strong>Pattern Observed:</strong> 470 service resources in environment, each with 900-5,600 dependencies. This consistent pattern suggests a template-level issue in the service module.
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Facets Type</th>
-                        <th>Facets Name</th>
-                        <th>TF Resources</th>
+                        <th>Resource Type</th>
+                        <th>Resource Name</th>
                         <th>Dependencies</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>1</td><td>service</td><td>internal-intouch-api-a</td><td>6</td><td>5,642</td></tr>
-                    <tr><td>2</td><td>service</td><td>intouch-api-read-a</td><td>6</td><td>5,642</td></tr>
-                    <tr><td>3</td><td>service</td><td>async-a</td><td>6</td><td>5,372</td></tr>
-                    <tr><td>4</td><td>service</td><td>intouch-api-a</td><td>6</td><td>5,172</td></tr>
-                    <tr><td>5</td><td>service</td><td>campaign-shard-a</td><td>6</td><td>4,502</td></tr>
-                    <tr><td>6</td><td>service</td><td>workflowmanager-runner-a</td><td>6</td><td>4,332</td></tr>
-                    <tr><td>7</td><td>service</td><td>workflowmanager-runner-standalone-a</td><td>6</td><td>4,122</td></tr>
-                    <tr><td>8</td><td>service</td><td>intouch-api-v3-jsvt</td><td>6</td><td>3,970</td></tr>
-                    <tr><td>9</td><td>service</td><td>peb-a</td><td>6</td><td>3,551</td></tr>
-                    <tr><td>10</td><td>service</td><td>emf-a</td><td>6</td><td>3,495</td></tr>
+                    <tr><td>1</td><td>service</td><td>internal-intouch-api-a</td><td>5,642</td></tr>
+                    <tr><td>2</td><td>service</td><td>intouch-api-read-a</td><td>5,642</td></tr>
+                    <tr><td>3</td><td>service</td><td>async-a</td><td>5,372</td></tr>
+                    <tr><td>4</td><td>service</td><td>intouch-api-a</td><td>5,172</td></tr>
+                    <tr><td>5</td><td>service</td><td>campaign-shard-a</td><td>4,502</td></tr>
+                    <tr><td>6</td><td>service</td><td>workflowmanager-runner-a</td><td>4,332</td></tr>
+                    <tr><td>7</td><td>service</td><td>workflowmanager-runner-standalone-a</td><td>4,122</td></tr>
+                    <tr><td>8</td><td>service</td><td>intouch-api-v3-jsvt</td><td>3,970</td></tr>
+                    <tr><td>9</td><td>service</td><td>peb-a</td><td>3,551</td></tr>
+                    <tr><td>10</td><td>service</td><td>emf-a</td><td>3,495</td></tr>
                 </tbody>
             </table>
 
@@ -673,51 +350,6 @@ scratch_string: metadata
                     <li><strong>module.application:</strong> Review why 15 resources have 577K dependencies - likely module-level depends_on</li>
                     <li><strong>Service module template:</strong> Check common template for unnecessary dependencies</li>
                 </ol>
-            </div>
-        </div>
-
-        <!-- Understanding Dependencies -->
-        <div class="section">
-            <h2>Understanding Dependency Analysis</h2>
-
-            <div class="warning-box">
-                <strong>Important Clarification: Edges vs Resources</strong>
-                <p style="margin-top: 10px;">The "blocks X resources" count represents <strong>dependency edges</strong>, not unique resources. When a resource like <code>base-domain-zone</code> shows "blocks 9,872" it means:</p>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li>There are 9,872 <strong>dependency connections</strong> pointing to this resource</li>
-                    <li>Multiple resources may have multiple edges to the same bottleneck</li>
-                    <li>Total unique resources in state: <strong>5,452</strong></li>
-                    <li>Total dependency edges: <strong>1,483,106</strong></li>
-                </ul>
-            </div>
-
-            <div class="highlight-box">
-                <strong>Fan-In vs Fan-Out:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li><strong>Fan-In (Excessive Dependencies)</strong> = Resource waits for too many others before it can start</li>
-                    <li><strong>Fan-Out (Bottleneck)</strong> = Resource blocks too many others from starting</li>
-                    <li><strong>Goal:</strong> Reduce unnecessary dependencies to allow more parallelization</li>
-                </ul>
-            </div>
-
-            <div class="two-column">
-                <div>
-                    <h3>Graph Statistics</h3>
-                    <table>
-                        <tr><td>Total Vertices (Resources)</td><td><strong>5,452</strong></td></tr>
-                        <tr><td>Total Edges (Dependencies)</td><td><strong>1,483,106</strong></td></tr>
-                        <tr><td>Resources WITH dependencies</td><td>4,368</td></tr>
-                        <tr><td>Resources WITHOUT dependencies</td><td>1,084</td></tr>
-                        <tr><td>Average edges per vertex</td><td>272.03</td></tr>
-                        <tr><td>Critical Path Depth</td><td>21 resources</td></tr>
-                    </table>
-                </div>
-                <div>
-                    <h3>Resource Type Distribution</h3>
-                    <div class="chart-container">
-                        <canvas id="resourceChart"></canvas>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -956,66 +588,39 @@ example_ingress must wait for:<br>
             </div>
 
             <h3>Impact on Release Time</h3>
+            <div class="warning-box" style="margin-bottom: 15px;">
+                <strong>Current Observed Times (from graphs):</strong> Based on your release data, full releases currently take <strong>10-27 minutes</strong> (Nightly: 16-17 min, Production varies by region). Even with 441K dependencies, Terraform parallelizes many operations, so the issue manifests as <strong>gradually increasing release times</strong> rather than full sequential execution.
+            </div>
             <table>
                 <thead>
                     <tr>
                         <th>Scenario</th>
                         <th>Dependencies</th>
                         <th>Execution</th>
-                        <th>Time</th>
+                        <th>Current Time</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><code>depends_on = [module.level2]</code></td>
                         <td>441,210</td>
-                        <td>Sequential (waits for ALL)</td>
-                        <td style="color: #e74c3c;"><strong>Hours</strong></td>
+                        <td>Partially sequential</td>
+                        <td style="color: #e74c3c;"><strong>16-27 min</strong></td>
                     </tr>
                     <tr>
                         <td><code>depends_on = [helm_release.nginx]</code></td>
                         <td>1</td>
-                        <td>Parallel (only waits for nginx)</td>
-                        <td style="color: #27ae60;"><strong>Seconds</strong></td>
+                        <td>Optimal parallelization</td>
+                        <td style="color: #27ae60;"><strong>6-10 min</strong></td>
                     </tr>
                     <tr>
                         <td>No depends_on (use references)</td>
                         <td>Auto-inferred</td>
-                        <td>Optimal parallelization</td>
-                        <td style="color: #27ae60;"><strong>Optimal</strong></td>
+                        <td>Maximum parallelization</td>
+                        <td style="color: #27ae60;"><strong>5-8 min</strong></td>
                     </tr>
                 </tbody>
             </table>
-
-            <h3>Visual Timeline Comparison</h3>
-            <div class="two-column">
-                <div>
-                    <h4 style="color: #e74c3c;">WITH module depends_on (Current)</h4>
-                    <div class="dep-chain" style="background: #fef2f2;">
-Time 0min   │ app1 starts<br>
-Time 0.5min │ app1 done, app2 starts<br>
-Time 1min   │ app2 done, app3 starts<br>
-...         │ (5,000 resources one by one)<br>
-Time 150min │ All done, ingress starts<br>
-Time 151min │ Ingress completes<br>
-<br>
-<strong style="color: #e74c3c;">Total: ~150+ minutes</strong>
-                    </div>
-                </div>
-                <div>
-                    <h4 style="color: #27ae60;">WITHOUT module depends_on (Fixed)</h4>
-                    <div class="dep-chain" style="background: #e8f5e9;">
-Time 0min   │ app1, app2, app3, nginx<br>
-            │ ALL start in parallel<br>
-Time 0.5min │ nginx done<br>
-Time 0.5min │ ingress starts immediately<br>
-Time 1min   │ ingress completes<br>
-            │ other apps continue parallel<br>
-<br>
-<strong style="color: #27ae60;">Total: ~1-2 minutes</strong>
-                    </div>
-                </div>
-            </div>
 
         </div>
 
