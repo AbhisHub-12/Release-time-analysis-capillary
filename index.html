@@ -196,6 +196,59 @@
                 </tbody>
             </table>
 
+            <h3>Dependency Breakdown: module.application (577,871 deps)</h3>
+            <div class="two-column">
+                <div>
+                    <h4>By Module (Where dependencies come from)</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2</strong></td>
+                                <td style="color: #e74c3c;"><strong>576,450</strong></td>
+                                <td>99.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>732</td><td>0.1%</td></tr>
+                            <tr><td>application</td><td>626</td><td>0.1%</td></tr>
+                            <tr><td>iam</td><td>63</td><td>0.0%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> 99.8% of dependencies come from <code>module.level2</code>. This indicates a broad <code>depends_on = [module.level2]</code> configuration.
+                    </div>
+                </div>
+                <div>
+                    <h4>By Resource Type</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Resource Type</th><th>Count</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>scratch_string</td><td>76,128</td><td>13.2%</td></tr>
+                            <tr><td>helm_release</td><td>73,217</td><td>12.7%</td></tr>
+                            <tr><td>random_password</td><td>33,306</td><td>5.8%</td></tr>
+                            <tr><td>aws_iam_role</td><td>22,755</td><td>3.9%</td></tr>
+                            <tr><td>kubernetes_service</td><td>19,032</td><td>3.3%</td></tr>
+                            <tr><td>null_resource</td><td>15,376</td><td>2.7%</td></tr>
+                            <tr><td>kubernetes_config_map</td><td>13,908</td><td>2.4%</td></tr>
+                            <tr><td>kubernetes_secret</td><td>12,444</td><td>2.2%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h4>Resources in module.application (15 total)</h4>
+            <div class="dep-chain">
+helm_release: bootstrap_jobs, cronjob, qasuite_cronjob, statefulset<br>
+mysql_grant: mysql_grants, mysql_grants_sibling<br>
+mysql_user: mysql_user, mysql_user_sibling<br>
+null_resource: modified_cronjobs, qa_deployment, serverless-deploy<br>
+random_string: random_password, random_username_suffix<br>
+external: serverless_build
+            </div>
+
             <h3>Module Categories Overview</h3>
             <div class="metric-cards">
                 <div class="metric-card">
