@@ -270,19 +270,22 @@
                     </div>
                 </div>
                 <div>
-                    <h5>By Resource Type</h5>
+                    <h5>By Facets Resource Type</h5>
                     <table>
                         <thead>
-                            <tr><th>Resource Type</th><th>Count</th><th>%</th></tr>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>scratch_string</td><td>76,128</td><td>13.2%</td></tr>
-                            <tr><td>helm_release</td><td>73,217</td><td>12.7%</td></tr>
-                            <tr><td>random_password</td><td>33,306</td><td>5.8%</td></tr>
-                            <tr><td>aws_iam_role</td><td>22,755</td><td>3.9%</td></tr>
-                            <tr><td>kubernetes_service</td><td>19,032</td><td>3.3%</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>mysql</td><td>247</td><td>⚠️ mysql_user excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                            <tr><td>ingress</td><td>5</td><td>❌ Must keep (routing)</td></tr>
+                            <tr><td>iam</td><td>10</td><td>✅ Add to exclusion</td></tr>
                         </tbody>
                     </table>
+                    <div class="warning-box" style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Note:</strong> This module contains helm_release, mysql resources, etc. (Terraform types). Above shows corresponding Facets types.
+                    </div>
                 </div>
             </div>
 
@@ -309,37 +312,61 @@
                     </div>
                 </div>
                 <div>
-                    <h5>By Resource Type</h5>
+                    <h5>By Facets Resource Type</h5>
                     <table>
                         <thead>
-                            <tr><th>Resource Type</th><th>Count</th><th>%</th></tr>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>scratch_string</td><td>58,624</td><td>13.2%</td></tr>
-                            <tr><td>helm_release</td><td>56,374</td><td>12.7%</td></tr>
-                            <tr><td>random_password</td><td>25,632</td><td>5.8%</td></tr>
-                            <tr><td>aws_iam_role</td><td>17,512</td><td>3.9%</td></tr>
+                            <tr style="background: #fef2f2;"><td><strong>ingress</strong></td><td>5</td><td>❌ MUST KEEP (critical)</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure deps</td></tr>
+                            <tr><td>cert</td><td>1</td><td>Certificate manager</td></tr>
                         </tbody>
                     </table>
+                    <div class="warning-box" style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Critical:</strong> <code>ingress</code> cannot be excluded - it's needed for routing traffic to services, despite the 444K dependencies.
+                    </div>
                 </div>
             </div>
 
             <h4>3. module.iam.module.application_roles (44,280 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>44,100</strong></td>
-                        <td>99.6%</td>
-                    </tr>
-                    <tr><td>root</td><td>156</td><td>0.4%</td></tr>
-                </tbody>
-            </table>
-            <div class="warning-box" style="margin-top: 10px;">
-                <strong>Finding:</strong> IAM roles should not wait for application deployments
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>44,100</strong></td>
+                                <td>99.6%</td>
+                            </tr>
+                            <tr><td>root</td><td>156</td><td>0.4%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px;">
+                        <strong>Finding:</strong> IAM roles should not wait for application deployments
+                    </div>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #d4edda;"><td><strong>iam</strong></td><td>10</td><td>✅ ADD to exclusion</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="success-box" style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Recommendation:</strong> Add <code>iam</code> to exclusion list. IAM policies don't need to be in module outputs.
+                    </div>
+                </div>
             </div>
 
             <h4>4. module.mysql_dbmaster.sharded_mysql_schema_seed (25,548 dependencies)</h4>
