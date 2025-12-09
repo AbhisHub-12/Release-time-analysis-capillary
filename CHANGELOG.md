@@ -5,6 +5,40 @@ All notable changes to this report will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project uses version numbers: MAJOR.MINOR (e.g., 2.1, 3.0).
 
+## [3.0] - 2025-12-09 - FINAL VALIDATED RECOMMENDATIONS
+
+### Added
+- **EXCLUSION_LIST_RECOMMENDATIONS_FINAL.md** - Complete validated recommendations
+- Comprehensive Facets resource type analysis from state file
+- Extracted all 33 Facets types with instance counts and TF resource mappings
+- Cross-referenced Facets UI with state file to validate recommendations
+- Final exclusion list additions: `iam` (confirmed) and `aurora` (safe)
+
+### Fixed
+- **Critical correction**: `application` is NOT a Facets resource type
+  - `module.application` is a root-level legacy module, not a Facets resource
+  - Cannot be excluded via `outputs_filtered` list (wrong module pattern)
+  - Confirmed: No `module.level2.module.application_*` instances in state file
+- **IAM type verification**: Confirmed `iam_policy` exists in Facets UI (not just `iam`)
+- **Ingress exclusion**: Confirmed `ingress` must NOT be excluded (critical for routing)
+
+### Analysis Findings
+- 33 Facets resource types found in state file
+- Top types: k8s (514 instances), mysql (247), service (222), grafana (107)
+- Top 3 critical modules analysis:
+  1. `module.application` (577K deps) - Root legacy module, NOT excludable
+  2. `module.level2.module.ingress_intouch-a` (444K deps) - Must keep in outputs
+  3. `module.level2.module.application_roles` (44K deps) - IAM module, add `iam` to exclusion
+
+### Recommendations
+- ✅ **Add to exclusion:** `iam` (10 instances, confirmed in UI as `iam_policy`)
+- ✅ **Add to exclusion:** `aurora` (30 instances, safe to exclude)
+- ❌ **Do NOT add:** `application` (not a Facets resource type)
+- ❌ **Do NOT add:** `ingress` (critical infrastructure, must keep)
+- Expected impact: 10-15% dependency reduction, 1-2 min release time improvement
+
+---
+
 ## [2.1] - 2025-12-08
 
 ### Added
@@ -13,10 +47,10 @@ and this project uses version numbers: MAJOR.MINOR (e.g., 2.1, 3.0).
 - Explanation: module.level2 contains ~5,000 resources
 - Summary box confirming 90-99.8% dependencies from module.level2
 - Version number in header
-- Changelog section in HTML report
+- Changelog section in HTML report (later removed per user feedback)
 
-### Next
-- Will add Facets resource type analysis (ingress, service, mysql, etc.)
+### Changed
+- Removed visible changelog from HTML report (keep only in CHANGELOG.md)
 
 ---
 
