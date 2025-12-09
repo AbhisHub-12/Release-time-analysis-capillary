@@ -1040,8 +1040,11 @@ example_ingress must wait for:<br>
 
         <!-- Resource Type Dependency Graph -->
         <div class="section">
-            <h2>Resource Type Dependency Graph (Top 10)</h2>
-            <p style="margin-bottom: 20px;">Visual representation of how the top 10 resource types are connected through dependency edges:</p>
+            <h2>Terraform Resource Type Dependency Graph (Top 10)</h2>
+            <div class="warning-box" style="margin-bottom: 20px;">
+                <strong>⚠️ Note:</strong> This section shows <strong>Terraform resource types</strong> (low-level implementation: scratch_string, helm_release, etc.), NOT Facets resource types. This analyzes how Terraform resources depend on each other under the hood.
+            </div>
+            <p style="margin-bottom: 20px;">Visual representation of how the top 10 Terraform resource types are connected through dependency edges:</p>
 
             <div class="two-column">
                 <div>
