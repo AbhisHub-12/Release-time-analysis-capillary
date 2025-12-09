@@ -416,117 +416,241 @@
             </div>
 
             <h4>4. module.mysql_dbmaster.sharded_mysql_schema_seed (25,548 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>23,956</strong></td>
-                        <td>93.8%</td>
-                    </tr>
-                    <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.0%</td></tr>
-                    <tr><td>root</td><td>308</td><td>1.2%</td></tr>
-                </tbody>
-            </table>
-            <div class="warning-box" style="margin-top: 10px;">
-                <strong>Finding:</strong> MySQL schema should only wait for MySQL instance, not all 5,000 resources
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>23,956</strong></td>
+                                <td>93.8%</td>
+                            </tr>
+                            <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.0%</td></tr>
+                            <tr><td>root</td><td>308</td><td>1.2%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Finding:</strong> MySQL schema should only wait for MySQL instance, not all 5,000 resources
+                    </div>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>mysql</td><td>247</td><td>MySQL databases</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <h4>5. module.mysql_dbmaster.mysql_schema_seed (22,364 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>20,772</strong></td>
-                        <td>92.9%</td>
-                    </tr>
-                    <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.7%</td></tr>
-                </tbody>
-            </table>
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>20,772</strong></td>
+                                <td>92.9%</td>
+                            </tr>
+                            <tr><td>mysql_dbmaster</td><td>1,284</td><td>5.7%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>mysql</td><td>247</td><td>MySQL databases</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <h4>6. module.mysql_reon.mysql_schema_seed (22,272 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>20,680</strong></td>
-                        <td>92.8%</td>
-                    </tr>
-                    <tr><td>mysql_reon</td><td>1,284</td><td>5.8%</td></tr>
-                </tbody>
-            </table>
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>20,680</strong></td>
+                                <td>92.8%</td>
+                            </tr>
+                            <tr><td>mysql_reon</td><td>1,284</td><td>5.8%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>mysql</td><td>247</td><td>MySQL databases</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <h4>7. module.mysql_metadb.mysql_schema_seed (9,607 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>8,923</strong></td>
-                        <td>92.9%</td>
-                    </tr>
-                    <tr><td>mysql_metadb</td><td>548</td><td>5.7%</td></tr>
-                </tbody>
-            </table>
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>8,923</strong></td>
+                                <td>92.9%</td>
+                            </tr>
+                            <tr><td>mysql_metadb</td><td>548</td><td>5.7%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>mysql</td><td>247</td><td>MySQL databases</td></tr>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <h4>8. module.level2.module.service_internal-intouch-api-a (5,642 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>5,124</strong></td>
-                        <td>90.8%</td>
-                    </tr>
-                    <tr><td>root</td><td>412</td><td>7.3%</td></tr>
-                    <tr><td>iam</td><td>106</td><td>1.9%</td></tr>
-                </tbody>
-            </table>
-            <div class="warning-box" style="margin-top: 10px;">
-                <strong>Finding:</strong> Service modules show 90.8% pattern - template-level issue
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>5,124</strong></td>
+                                <td>90.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>412</td><td>7.3%</td></tr>
+                            <tr><td>iam</td><td>106</td><td>1.9%</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warning-box" style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Finding:</strong> Service modules show 90.8% pattern - template-level issue
+                    </div>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                            <tr><td>iam</td><td>10</td><td>✅ Add to exclusion</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <h4>9. module.level2.module.service_intouch-api-read-a (5,642 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>5,124</strong></td>
-                        <td>90.8%</td>
-                    </tr>
-                    <tr><td>root</td><td>412</td><td>7.3%</td></tr>
-                </tbody>
-            </table>
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>5,124</strong></td>
+                                <td>90.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>412</td><td>7.3%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <h4>10. module.level2.module.service_async-a (5,372 dependencies)</h4>
-            <table style="width: 50%;">
-                <thead>
-                    <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>module.level2.*</strong></td>
-                        <td style="color: #e74c3c;"><strong>4,878</strong></td>
-                        <td>90.8%</td>
-                    </tr>
-                    <tr><td>root</td><td>392</td><td>7.3%</td></tr>
-                </tbody>
-            </table>
+            <div class="two-column">
+                <div>
+                    <h5>By Module Path</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Source Module Path</th><th>Dependencies</th><th>%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fef2f2;">
+                                <td><strong>module.level2.*</strong></td>
+                                <td style="color: #e74c3c;"><strong>4,878</strong></td>
+                                <td>90.8%</td>
+                            </tr>
+                            <tr><td>root</td><td>392</td><td>7.3%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h5>By Facets Resource Type</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Facets Type</th><th>Instances</th><th>Note</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>service</td><td>222</td><td>✅ Already excluded</td></tr>
+                            <tr><td>k8s</td><td>514</td><td>Infrastructure</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <div class="success-box" style="margin-top: 20px;">
                 <strong>Summary:</strong> All top 10 modules show <strong>90-99.8% of dependencies from module.level2</strong>. This confirms systematic <code>depends_on = [module.level2]</code> issue causing all these modules to wait for ~5,000 resources to complete.
