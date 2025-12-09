@@ -133,48 +133,32 @@
                         <canvas id="resourceChart"></canvas>
                     </div>
                 </div>
+
+        <div class="section">
+            <h2>Facets Resource Type Distribution</h2>
+            <p style="color: #666; margin-bottom: 20px;">
+                This chart shows how many instances exist for each Facets resource type in the environment.
+                <strong>Facets resource types</strong> are high-level abstractions (like "service", "mysql", "ingress") that create multiple Terraform resources.
+            </p>
+
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="facetsTypeChart"></canvas>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 20px;">
+                <strong>Key Findings:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>k8s</strong> (514 instances) - Kubernetes resources like clusters, roles, etc.</li>
+                    <li><strong>mysql</strong> (247 instances) - MySQL databases with 1,687 Terraform resources</li>
+                    <li><strong>service</strong> (222 instances) - Application services (✅ already excluded from outputs)</li>
+                    <li><strong>grafana</strong> (107 instances) - Monitoring dashboards</li>
+                    <li><strong>Total:</strong> 33 different Facets resource types found in state file</li>
+                </ul>
+            </div>
             </div>
         </div>
 
         <!-- Summary Table -->
-        <div class="section">
-            <h2>Summary: Exclusion List Recommendations (Validated)</h2>
-
-            <div class="warning-box" style="margin-bottom: 20px;">
-                <strong>⚠️ Important:</strong> The exclusion list in <code>generate.py</code> (lines 1292-1315) expects <strong>Facets resource types</strong> (like <code>iam</code>, <code>aurora</code>, <code>service</code>), NOT Terraform resource types (like <code>helm_release</code>, <code>scratch_string</code>).
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Facets Resource Type</th>
-                        <th>Current State</th>
-                        <th>Action</th>
-                        <th>Expected Impact</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #d4edda;">
-                        <td><strong>iam</strong> (iam_policy)</td>
-                        <td>10 instances, 20 TF resources</td>
-                        <td><strong>✅ ADD to exclusion list</strong> - Confirmed in Facets UI</td>
-                        <td>Moderate reduction (44K deps from IAM modules)</td>
-                    </tr>
-                    <tr style="background: #d4edda;">
-                        <td><strong>aurora</strong></td>
-                        <td>30 instances, ~200 TF resources</td>
-                        <td><strong>✅ ADD to exclusion list</strong> - Safe to exclude</td>
-                        <td>Moderate reduction (DB clusters don't need outputs)</td>
-                    </tr>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>application</strong></td>
-                        <td>577,871 deps (legacy module)</td>
-                        <td><strong>❌ CANNOT EXCLUDE</strong> - Not a Facets type (root module)</td>
-                        <td>N/A - Wrong module pattern</td>
-                    </tr>
-                    <tr style="background: #fef2f2;">
-                        <td><strong>ingress</strong></td>
-                        <td>5 instances, 444,602 deps</td>
                         <td><strong>❌ KEEP in outputs</strong> - Critical for routing</td>
                         <td>N/A - Services need ingress resources</td>
                     </tr>
@@ -1208,28 +1192,67 @@ states/
         </div>
 
 
-        <!-- Facets Resource Type Distribution -->
+
         <div class="section">
-            <h2>Facets Resource Type Distribution</h2>
-            <p style="color: #666; margin-bottom: 20px;">
-                This chart shows how many instances exist for each Facets resource type in the environment.
-                <strong>Facets resource types</strong> are high-level abstractions (like "service", "mysql", "ingress") that create multiple Terraform resources.
-            </p>
+            <h2>Summary: Exclusion List Recommendations (Validated)</h2>
 
-            <div class="chart-container" style="height: 500px;">
-                <canvas id="facetsTypeChart"></canvas>
+            <div class="warning-box" style="margin-bottom: 20px;">
+                <strong>⚠️ Important:</strong> The exclusion list in <code>generate.py</code> (lines 1292-1315) expects <strong>Facets resource types</strong> (like <code>iam</code>, <code>aurora</code>, <code>service</code>), NOT Terraform resource types (like <code>helm_release</code>, <code>scratch_string</code>).
             </div>
 
-            <div class="highlight-box" style="margin-top: 20px;">
-                <strong>Key Findings:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li><strong>k8s</strong> (514 instances) - Kubernetes resources like clusters, roles, etc.</li>
-                    <li><strong>mysql</strong> (247 instances) - MySQL databases with 1,687 Terraform resources</li>
-                    <li><strong>service</strong> (222 instances) - Application services (✅ already excluded from outputs)</li>
-                    <li><strong>grafana</strong> (107 instances) - Monitoring dashboards</li>
-                    <li><strong>Total:</strong> 33 different Facets resource types found in state file</li>
-                </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Facets Resource Type</th>
+                        <th>Current State</th>
+                        <th>Action</th>
+                        <th>Expected Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #d4edda;">
+                        <td><strong>iam</strong> (iam_policy)</td>
+                        <td>10 instances, 20 TF resources</td>
+                        <td><strong>✅ ADD to exclusion list</strong> - Confirmed in Facets UI</td>
+                        <td>Moderate reduction (44K deps from IAM modules)</td>
+                    </tr>
+                    <tr style="background: #d4edda;">
+                        <td><strong>aurora</strong></td>
+                        <td>30 instances, ~200 TF resources</td>
+                        <td><strong>✅ ADD to exclusion list</strong> - Safe to exclude</td>
+                        <td>Moderate reduction (DB clusters don't need outputs)</td>
+                    </tr>
+                    <tr style="background: #fef2f2;">
+                        <td><strong>application</strong></td>
+                        <td>577,871 deps (legacy module)</td>
+                        <td><strong>❌ CANNOT EXCLUDE</strong> - Not a Facets type (root module)</td>
+                        <td>N/A - Wrong module pattern</td>
+                    </tr>
+                    <tr style="background: #fef2f2;">
+                        <td><strong>ingress</strong></td>
+                        <td>5 instances, 444,602 deps</td>
+                        <td><strong>❌ KEEP in outputs</strong> - Critical for routing</td>
+                        <td>N/A - Services need ingress resources</td>
+                    </tr>
+                    <tr style="background: #e8f5e9;">
+                        <td><strong>service</strong></td>
+                        <td>222 instances, 1,419 TF resources</td>
+                        <td><strong>✅ Already excluded</strong></td>
+                        <td>Already optimized</td>
+                    </tr>
+                    <tr style="background: #e8f5e9;">
+                        <td><strong>mysql_user</strong></td>
+                        <td>Part of mysql (247 instances)</td>
+                        <td><strong>✅ Already excluded</strong></td>
+                        <td>Already optimized</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="success-box" style="margin-top: 20px;">
+                <strong>Expected Improvement:</strong> Adding <code>iam</code> and <code>aurora</code> to the exclusion list will reduce unnecessary dependencies by <strong>10-15%</strong>, improving release times by an estimated <strong>1-2 minutes</strong>.
             </div>
+        <!-- Facets Resource Type Distribution -->
         </div>
 
         <!-- Next Steps -->
