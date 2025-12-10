@@ -140,23 +140,18 @@
             </div>
         </div>
 
-    </div>
-
-    <!-- Full-Width Facets Chart Section -->
-    <div class="full-width-section">
-        <div class="section-content">
+        <!-- Facets Resource Type Distribution -->
+        <div class="section">
             <h2>Facets Resource Type Distribution</h2>
             <p style="color: #666; margin-bottom: 20px;">
                 This chart shows how many instances exist for each Facets resource type in the environment.
                 <strong>Facets resource types</strong> are high-level abstractions (like "service", "mysql", "ingress") that create multiple Terraform resources.
             </p>
-        </div>
 
-        <div class="full-width-chart">
-            <canvas id="facetsTypeChart"></canvas>
-        </div>
+            <div class="chart-container" style="height: 450px;">
+                <canvas id="facetsTypeChart"></canvas>
+            </div>
 
-        <div class="section-content">
             <div class="highlight-box" style="margin-top: 20px;">
                 <strong>Key Findings:</strong>
                 <ul style="margin: 10px 0 0 20px;">
@@ -168,9 +163,6 @@
                 </ul>
             </div>
         </div>
-    </div>
-
-    <div class="container">
 
         <!-- CRITICAL: Module-Level Dependency Analysis - TOP SECTION -->
         <div class="section critical-finding">
